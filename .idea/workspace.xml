@@ -71,6 +71,14 @@
       <screen x="0" y="0" width="3440" height="1400" />
     </state>
     <state x="314" y="358" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.3440.1400@0.0.3440.1400" timestamp="1602319933850" />
+    <state x="647" y="441" key="FileChooserDialogImpl" timestamp="1602322221411">
+      <screen x="0" y="0" width="3440" height="1400" />
+    </state>
+    <state x="647" y="441" key="FileChooserDialogImpl/0.0.3440.1400@0.0.3440.1400" timestamp="1602322221411" />
+    <state x="701" y="597" key="Github.ShareDialog" timestamp="1602322185736">
+      <screen x="0" y="0" width="3440" height="1400" />
+    </state>
+    <state x="701" y="597" key="Github.ShareDialog/0.0.3440.1400@0.0.3440.1400" timestamp="1602322185736" />
     <state width="1674" height="400" key="GridCell.Tab.0.bottom" timestamp="1602321072034">
       <screen x="0" y="0" width="3440" height="1400" />
     </state>
@@ -87,5 +95,9 @@
       <screen x="0" y="0" width="3440" height="1400" />
     </state>
     <state width="1674" height="400" key="GridCell.Tab.0.right/0.0.3440.1400@0.0.3440.1400" timestamp="1602321072034" />
+    <state x="368" y="344" key="SettingsEditor" timestamp="1602322055304">
+      <screen x="0" y="0" width="3440" height="1400" />
+    </state>
+    <state x="368" y="344" key="SettingsEditor/0.0.3440.1400@0.0.3440.1400" timestamp="1602322055304" />
   </component>
 </project>
