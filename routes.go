@@ -2,7 +2,7 @@ package main
 
 import "github.com/canlot/Bookmarkmanager-Server/Handlers"
 
-func initializeRoutes() {
+func InitializeRoutes() {
 	apiRoutes := router.Group("/apiv1", Handlers.Authenticate)
 	{
 		apiRoutes.GET("/currentuser", Handlers.GetCurrentUser)
