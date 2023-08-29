@@ -4,34 +4,30 @@ import (
 	"gorm.io/gorm"
 )
 
-var showPassword bool = false
+var ShowPassword bool = false
 
 type Category struct {
 	gorm.Model
-	ParentID           uint       `json:"parent_id"`
-	Name               string     `json:"name"`
-	Shared             bool       `json:"shared"`
-	OwnerID            uint       `json:"owner_id"`
-	Bookmarks          []Bookmark `json:"-"`
-	UsersFullAccess    []User     `json:"-" gorm:"many2many:user_categories_full;"`
-	UsersInheritAccess []User     `json:"-" gorm:"many2many:user_categories_inherit"`
+	ParentID    uint       `json:"parentid"`
+	Name        string     `json:"name"`
+	Shared      bool       `json:"shared"`
+	OwnerID     uint       `json:"ownerid"`
+	Bookmarks   []Bookmark `json:"-"`
+	UsersAccess []User     `json:"-" gorm:"many2many:user_categories;"`
 }
 
 type Bookmark struct {
 	gorm.Model
-	CategoryID      uint   `json:"category_id"`
-	Url             string `json:"url"`
-	UsersFullAccess []User `json:"-" gorm:"many2many:user_bookmarks_full;"`
+	CategoryID uint   `json:"categoryid"`
+	Url        string `json:"url"`
 }
 
 type User struct {
 	gorm.Model
-	Name                    string     `json:"name"`
-	Password                string     `json:"password"`
-	Administrator           bool       `json:"administrator"`
-	CategoriesFullAccess    []Category `json:"-" gorm:"many2many:user_categories_full;"`
-	CategoriesInheritAccess []Category `json:"-" gorm:"many2many:user_categories_inherit;"`
-	BookmarksFullAccess     []Bookmark `json:"-" gorm:"many2many:user_bookmarks_full;"`
+	Name             string     `json:"name"`
+	Password         string     `json:"password"`
+	Administrator    bool       `json:"administrator"`
+	CategoriesAccess []Category `json:"-" gorm:"many2many:user_categories;"`
 }
 
 type JsonError struct {

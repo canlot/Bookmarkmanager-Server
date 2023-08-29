@@ -3,23 +3,17 @@ package Models
 func GetCategories(UserId uint, categoryID uint) (categories []Category, success bool) {
 	var user User
 	if result := Database.Take(&user, UserId); result.Error == nil {
-		if result := Database.Model(&user).Association("CategoriesFullAccess").Find(&categories, "parent_id = ?", categoryID); result == nil {
-			var categoriesInherit []Category
-			if result := Database.Model(&user).Association("CategoriesInheritAccess").Find(&categoriesInherit, "parent_id = ?", categoryID); result == nil {
-				categories := append(categories, categoriesInherit...)
-				return categories, true
-			} else {
-				return categories, false
-			}
+		if result := Database.Model(&user).Association("CategoriesAccess").Find(&categories, "parent_id = ?", categoryID); result == nil {
+			return categories, true
 		} else {
-			return categories, false
+			return []Category{}, false
 		}
 	} else {
-		return categories, false
+		return []Category{}, false
 	}
 }
 
-func AddCategory(UserId uint, category Category) (categoryret Category, success bool) {
+func AddCategory(UserId uint, category Category) (Category, bool) {
 	var user User
 	if category.OwnerID == 0 || category.OwnerID != UserId {
 		category.OwnerID = UserId
@@ -27,24 +21,45 @@ func AddCategory(UserId uint, category Category) (categoryret Category, success 
 	if result := Database.First(&user, UserId); result.Error == nil {
 		if category.ParentID == 0 {
 			if result := Database.Create(&category); result.Error == nil {
-				if result := Database.Model(&category).Association("UsersFullAccess").Append(&user); result == nil {
+				if result := Database.Model(&category).Association("UsersAccess").Append(&user); result == nil {
 					return category, true
 				}
 			}
 		} else {
 			var parentCategory Category
 			if result := Database.Take(&parentCategory, category.ParentID); result.Error == nil {
-				if parentCategory.OwnerID != category.OwnerID {
-					return category, false
-				}
-				if result := Database.Create(&category); result.Error == nil {
-					if result := Database.Model(&category).Association("UsersFullAccess").Append(&user); result == nil {
-						return category, true
+				if parentCategory.OwnerID == category.OwnerID {
+					if result := Database.Create(&category); result.Error == nil {
+						if result := Database.Model(&category).Association("UsersAccess").Append(&user); result == nil {
+							return category, true
+						}
 					}
 				}
 			}
 		}
 
 	}
-	return category, false
+	return Category{}, false
+}
+
+func EditCategory(userId uint, category Category) (Category, bool) {
+	if category.OwnerID != userId {
+		return Category{}, false
+	}
+	Database.Save(&category)
+	return category, true
+}
+
+func DeleteCategory(categoryId uint, UserId uint) bool {
+	var category Category
+	if result := Database.Take(&category, categoryId); result.Error != nil {
+		return false
+	}
+	if category.OwnerID != UserId {
+		return false
+	}
+	if category.DeleteAll() != true {
+		return false
+	}
+	return true
 }

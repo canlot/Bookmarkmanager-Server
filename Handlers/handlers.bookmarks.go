@@ -14,7 +14,7 @@ func GetBookmarksWithCategoryId(c *gin.Context) {
 		} else {
 			Description := "No such bookmarks with this category id: "
 			error := Models.JsonError{"No category", Description}
-			c.JSON(300, error)
+			c.JSON(400, error)
 		}
 
 	} else {

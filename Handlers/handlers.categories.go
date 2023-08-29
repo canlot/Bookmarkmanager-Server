@@ -45,3 +45,33 @@ func AddCategory(c *gin.Context) {
 	}
 
 }
+func EditCategory(c *gin.Context) {
+	var category Models.Category
+	if error := c.BindJSON(&category); error != nil {
+		c.Status(400)
+		return
+	}
+	if category, success := Models.EditCategory(Helpers.GetUserIDasUint(c), category); success == true {
+		c.JSON(200, category)
+	}
+	c.Status(400)
+}
+
+func DeleteCategory(c *gin.Context) {
+	stringid := c.Param("category_id")
+	var categoryId uint
+	if stringid == "" {
+		c.Status(400)
+		return
+	}
+	var success bool
+	if categoryId, success = Helpers.ConvertFromStringToUint(&stringid); success != true {
+		c.Status(400)
+		return
+	}
+	if Models.DeleteCategory(categoryId, Helpers.GetUserIDasUint(c)) != true {
+		c.Status(400)
+		return
+	}
+	c.Status(200)
+}

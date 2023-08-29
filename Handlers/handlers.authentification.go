@@ -9,7 +9,7 @@ import (
 func Authenticate(c *gin.Context) {
 	authorized := false
 	if username, password, ok := c.Request.BasicAuth(); ok == true {
-		if user, success := Models.GetUser(username); success == true {
+		if user, success := Models.GetUser(username, true); success == true {
 			if user.Name == username && user.Password == password {
 				authorized = true
 				c.Set("UserID", user.ID)
