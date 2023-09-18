@@ -9,10 +9,8 @@ var router *gin.Engine
 
 func main() {
 	Models.DatabaseConfig()
-
 	gin.SetMode(gin.ReleaseMode)
 	router = gin.Default()
 	InitializeRoutes()
 	router.Run()
-
 }
