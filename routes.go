@@ -1,6 +1,6 @@
 package main
 
-import "github.com/canlot/Bookmarkmanager-Server/Handlers"
+import "Bookmarkmanager-Server/Handlers"
 
 func InitializeRoutes() {
 	apiRoutes := router.Group("/apiv1", Handlers.Authenticate)

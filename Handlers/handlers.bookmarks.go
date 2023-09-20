@@ -1,8 +1,8 @@
 package Handlers
 
 import (
-	"github.com/canlot/Bookmarkmanager-Server/Helpers"
-	"github.com/canlot/Bookmarkmanager-Server/Models"
+	"Bookmarkmanager-Server/Helpers"
+	"Bookmarkmanager-Server/Models"
 	"github.com/gin-gonic/gin"
 )
 

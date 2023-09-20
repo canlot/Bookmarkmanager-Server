@@ -2,8 +2,9 @@ package Models
 
 import (
 	"fmt"
+	"github.com/glebarez/sqlite"
 	"gorm.io/driver/mysql"
-	"gorm.io/driver/sqlite"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -15,16 +16,27 @@ const (
 	Mysql
 )
 
+type Environment int
+
+const (
+	Production Environment = iota
+	Test
+)
+
 var Database *gorm.DB
 
-func DatabaseConfig() {
+func DatabaseConfig(databaseType DatabaseType, environment Environment) {
 	var err error
-	databaseType := Sqlite
-
 	if databaseType == Sqlite {
-		Database, err = gorm.Open(sqlite.Open("C:\\Users\\Jakob\\go\\src\\github.com\\canlot\\Bookmarkmanager-Server\\gorm.db"), &gorm.Config{})
+		//Database, err = gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
+		Database, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	} else if databaseType == Mysql {
-		dsn := fmt.Sprintf("%s:%s@(%s:%d)/%s?charset=utf8&parseTime=True&loc=Local", "gotest", "gotest", "localhost", 3306, "gotest")
+		var dsn string
+		if environment == Production {
+			dsn = fmt.Sprintf("%s:%s@(%s:%d)/%s?charset=utf8&parseTime=True&loc=Local", "gotest", "gotest", "localhost", 3306, "gotest")
+		} else if environment == Test {
+			dsn = fmt.Sprintf("%s:%s@(%s:%d)/%s?charset=utf8&parseTime=True&loc=Local", "gotest", "gotest", "localhost", 3306, "test")
+		}
 		Database, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 			Logger: logger.Default.LogMode(logger.Info),
 		})

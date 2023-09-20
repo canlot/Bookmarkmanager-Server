@@ -1,14 +1,14 @@
 package main
 
 import (
-	"github.com/canlot/Bookmarkmanager-Server/Models"
+	"Bookmarkmanager-Server/Models"
 	"github.com/gin-gonic/gin"
 )
 
 var router *gin.Engine
 
 func main() {
-	Models.DatabaseConfig()
+	Models.DatabaseConfig(Models.Sqlite, Models.Production)
 	gin.SetMode(gin.ReleaseMode)
 	router = gin.Default()
 	InitializeRoutes()

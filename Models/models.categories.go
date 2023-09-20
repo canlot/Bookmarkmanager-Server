@@ -1,5 +1,6 @@
 package Models
 
+// Get all permitted categories for the current user if no id is provided, if id is provided, then get all child categories
 func GetCategories(UserId uint, categoryID uint) (categories []Category, success bool) {
 	var user User
 	if result := Database.Take(&user, UserId); result.Error == nil {
