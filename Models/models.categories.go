@@ -3,17 +3,18 @@ package Models
 import "errors"
 
 // get all categories for permitted user with parent_id
-func GetCategories(UserId uint, categoryID uint) (categories []Category, success bool) {
+func GetCategories(UserId uint, categoryID uint) (categories []Category, err error) {
 	var user User
-	if result := Database.Take(&user, UserId); result.Error == nil {
-		if result := Database.Model(&user).Association("CategoriesAccess").Find(&categories, "parent_id = ?", categoryID); result == nil {
-			return categories, true
-		} else {
-			return []Category{}, false
-		}
-	} else {
-		return []Category{}, false
+	if result := Database.Take(&user, UserId); result.Error != nil {
+		return []Category{}, errors.New("Database error")
 	}
+
+	if result := Database.Model(&user).Association("CategoriesAccess").Find(&categories, "parent_id = ?", categoryID); result == nil {
+		return categories, nil
+	} else {
+		return []Category{}, errors.New(result.Error())
+	}
+
 }
 
 func AddCategory(UserId uint, category Category) error {

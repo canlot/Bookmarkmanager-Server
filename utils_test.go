@@ -211,6 +211,45 @@ func TestAddCategory(t *testing.T) {
 
 }
 
+func TestAddCategoryChild(t *testing.T) {
+	PopulateDatabase()
+	defer CleanupDatabase()
+
+	golangCategory := Models.Category{
+		Model:    gorm.Model{ID: 4},
+		ParentID: 3,
+		Name:     "Golang",
+		Shared:   false,
+		OwnerID:  1, //wrong OwnerId at start, should be 2 -> User
+	}
+
+	//test with wrong OwnerId
+	c := GetGinContextAsAdministrator("POST", "/apiv1/categories", &golangCategory)
+	Handlers.AddCategory(c)
+
+	assert.Equal(t, 400, c.Writer.Status())
+
+	var testCategory Models.Category
+	if dbctx := Models.Database.Take(&testCategory, golangCategory.ID); dbctx.Error == nil {
+		t.Error("Category has been still added")
+	}
+
+	//test with right OwnerId
+	golangCategory.OwnerID = 2
+	c = GetGinContextAsUser("POST", "/apiv1/categories", &golangCategory)
+	Handlers.AddCategory(c)
+
+	assert.Equal(t, 200, c.Writer.Status())
+
+	var category Models.Category
+
+	Models.Database.Take(&category, golangCategory.ID)
+
+	assert.Equal(t, category.Name, golangCategory.Name)
+	assert.Equal(t, category.OwnerID, Users["User"].ID) // Should be set to "Users" "Id" because "User" created it
+
+}
+
 func TestEditCategory(t *testing.T) {
 	PopulateDatabase()
 	defer CleanupDatabase()
@@ -271,5 +310,9 @@ func TestEditCategory(t *testing.T) {
 	Handlers.EditCategory(c)
 
 	assert.Equal(t, 400, c.Writer.Status())
+
+}
+
+func TestDeleteCategory(t *testing.T) {
 
 }

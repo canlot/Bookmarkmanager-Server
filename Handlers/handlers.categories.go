@@ -20,12 +20,11 @@ func GetCategories(c *gin.Context) {
 		}
 	}
 
-	if categories, success := Models.GetCategories(Helpers.GetUserIdAsUint(c), categoryId); success == true {
+	if categories, err := Models.GetCategories(Helpers.GetUserIdAsUint(c), categoryId); err == nil {
 		c.JSON(200, categories)
 		return
 	} else {
-		error := Models.JsonError{"Could not fetch", "kdjsl"}
-		c.JSON(400, error)
+		c.JSON(400, err)
 		return
 	}
 
