@@ -47,14 +47,14 @@ func AddCategory(c *gin.Context) {
 }
 func EditCategory(c *gin.Context) {
 	var category Models.Category
-	if error := c.BindJSON(&category); error != nil {
-		c.Status(400)
+	if err := c.BindJSON(&category); err != nil {
+		c.JSON(400, err)
 		return
 	}
-	if category, success := Models.EditCategory(Helpers.GetUserIDasUint(c), category); success == true {
-		c.JSON(200, category)
+	if err := Models.EditCategory(Helpers.GetUserIDasUint(c), category); err != nil {
+		c.JSON(400, err)
 	}
-	c.Status(400)
+	c.Status(200)
 }
 
 func DeleteCategory(c *gin.Context) {

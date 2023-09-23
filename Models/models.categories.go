@@ -1,6 +1,8 @@
 package Models
 
-// Get all permitted categories for the current user if no id is provided, if id is provided, then get all child categories
+import "errors"
+
+// get all categories for permitted user with parent_id
 func GetCategories(UserId uint, categoryID uint) (categories []Category, success bool) {
 	var user User
 	if result := Database.Take(&user, UserId); result.Error == nil {
@@ -43,12 +45,22 @@ func AddCategory(UserId uint, category Category) (Category, bool) {
 	return Category{}, false
 }
 
-func EditCategory(userId uint, category Category) (Category, bool) {
+func EditCategory(userId uint, category Category) error {
 	if category.OwnerID != userId {
-		return Category{}, false
+		return errors.New("Category OwnerID is not UserId")
+	}
+	var curCategory Category
+	if result := Database.Take(&curCategory, category.ID); result.Error != nil {
+		return errors.New("Database error")
+	}
+	if (Category{}) == curCategory {
+		return errors.New("No such category exists")
+	}
+	if category.ParentID != curCategory.ParentID {
+		return errors.New("ParentId cannot be changed")
 	}
 	Database.Save(&category)
-	return category, true
+	return nil
 }
 
 func DeleteCategory(categoryId uint, UserId uint) bool {
