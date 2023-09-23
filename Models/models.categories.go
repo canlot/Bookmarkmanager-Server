@@ -16,7 +16,7 @@ func GetCategories(UserId uint, categoryID uint) (categories []Category, success
 	}
 }
 
-func AddCategory(UserId uint, category Category) (Category, bool) {
+func AddCategory(UserId uint, category Category) error {
 	var user User
 	if category.OwnerID == 0 || category.OwnerID != UserId {
 		category.OwnerID = UserId
@@ -25,7 +25,7 @@ func AddCategory(UserId uint, category Category) (Category, bool) {
 		if category.ParentID == 0 {
 			if result := Database.Create(&category); result.Error == nil {
 				if result := Database.Model(&category).Association("UsersAccess").Append(&user); result == nil {
-					return category, true
+					return nil
 				}
 			}
 		} else {
@@ -34,7 +34,7 @@ func AddCategory(UserId uint, category Category) (Category, bool) {
 				if parentCategory.OwnerID == category.OwnerID {
 					if result := Database.Create(&category); result.Error == nil {
 						if result := Database.Model(&category).Association("UsersAccess").Append(&user); result == nil {
-							return category, true
+							return nil
 						}
 					}
 				}
@@ -42,7 +42,7 @@ func AddCategory(UserId uint, category Category) (Category, bool) {
 		}
 
 	}
-	return Category{}, false
+	return errors.New("Error occured")
 }
 
 func EditCategory(userId uint, category Category) error {
@@ -51,10 +51,7 @@ func EditCategory(userId uint, category Category) error {
 	}
 	var curCategory Category
 	if result := Database.Take(&curCategory, category.ID); result.Error != nil {
-		return errors.New("Database error")
-	}
-	if (Category{}) == curCategory {
-		return errors.New("No such category exists")
+		return errors.New("Database error or category not found")
 	}
 	if category.ParentID != curCategory.ParentID {
 		return errors.New("ParentId cannot be changed")

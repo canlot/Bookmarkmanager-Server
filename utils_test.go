@@ -264,4 +264,13 @@ func TestEditCategory(t *testing.T) {
 
 	assert.Equal(t, 400, c.Writer.Status())
 
+	//case 4: not existent id
+	testCategory.ID = 100
+	testCategory.ParentID = Categories["Books"].ParentID
+
+	c = GetGinContextAsAdministrator("PUT", "/apiv1/categories", &testCategory)
+	Handlers.EditCategory(c)
+
+	assert.Equal(t, 400, c.Writer.Status())
+
 }

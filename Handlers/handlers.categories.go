@@ -29,11 +29,11 @@ func GetCategories(c *gin.Context) {
 
 func AddCategory(c *gin.Context) {
 	var category Models.Category
-	if error := c.BindJSON(&category); error == nil {
-		if category, success := Models.AddCategory(Helpers.GetUserIDasUint(c), category); success == true {
-			c.JSON(200, category)
+	if err := c.BindJSON(&category); err == nil {
+		if err := Models.AddCategory(Helpers.GetUserIDasUint(c), category); err == nil {
+			c.Status(200)
 		} else {
-			c.Status(400)
+			c.JSON(400, err)
 		}
 
 	} else {
