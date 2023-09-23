@@ -16,32 +16,33 @@ func GetCategories(c *gin.Context) {
 		if categoryId, success = Helpers.ConvertFromStringToUint(&stringid); success != true {
 			error := Models.JsonError{"Wrong category", "Could not convert category"}
 			c.JSON(400, error)
+			return
 		}
 	}
-	if categories, success := Models.GetCategories(Helpers.GetUserIDasUint(c), categoryId); success == true {
+
+	if categories, success := Models.GetCategories(Helpers.GetUserIdAsUint(c), categoryId); success == true {
 		c.JSON(200, categories)
+		return
 	} else {
 		error := Models.JsonError{"Could not fetch", "kdjsl"}
 		c.JSON(400, error)
+		return
 	}
 
 }
 
 func AddCategory(c *gin.Context) {
 	var category Models.Category
-	if err := c.BindJSON(&category); err == nil {
-		if err := Models.AddCategory(Helpers.GetUserIDasUint(c), category); err == nil {
-			c.Status(200)
-		} else {
-			c.JSON(400, err)
-		}
-
+	if err := c.BindJSON(&category); err != nil {
+		c.JSON(400, err)
+		return
+	}
+	if err := Models.AddCategory(Helpers.GetUserIdAsUint(c), category); err != nil {
+		c.JSON(400, err)
+		return
 	} else {
-		error := Models.JsonError{
-			Error:       "Request could not be proceed",
-			Description: error.Error(),
-		}
-		c.JSON(400, error)
+		c.Status(200)
+		return
 	}
 
 }
@@ -51,8 +52,9 @@ func EditCategory(c *gin.Context) {
 		c.JSON(400, err)
 		return
 	}
-	if err := Models.EditCategory(Helpers.GetUserIDasUint(c), category); err != nil {
+	if err := Models.EditCategory(Helpers.GetUserIdAsUint(c), category); err != nil {
 		c.JSON(400, err)
+		return
 	}
 	c.Status(200)
 }
@@ -69,7 +71,7 @@ func DeleteCategory(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	if Models.DeleteCategory(categoryId, Helpers.GetUserIDasUint(c)) != true {
+	if Models.DeleteCategory(categoryId, Helpers.GetUserIdAsUint(c)) != true {
 		c.Status(400)
 		return
 	}

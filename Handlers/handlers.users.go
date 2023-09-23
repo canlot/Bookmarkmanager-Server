@@ -40,7 +40,7 @@ func AddUsersForCategory(c *gin.Context, inherit bool) {
 	}
 	if error := c.BindJSON(&users); error == nil {
 		fmt.Println("das ist der Anfang")
-		if errstring, success := Models.AddUsersForCategory(Helpers.GetUserIDasUint(c), id, &users, inherit); success == true {
+		if errstring, success := Models.AddUsersForCategory(Helpers.GetUserIdAsUint(c), id, &users, inherit); success == true {
 			c.Status(200)
 		} else {
 			errorjson := Models.JsonError{"ORM error", errstring}
@@ -62,7 +62,7 @@ func RemoveUsersFromCategory(c *gin.Context) {
 		return
 	}
 	if error := c.BindJSON(&users); error == nil {
-		if errstring, success := Models.RemoveUsersFromCategory(Helpers.GetUserIDasUint(c), id, &users); success == true {
+		if errstring, success := Models.RemoveUsersFromCategory(Helpers.GetUserIdAsUint(c), id, &users); success == true {
 			c.Status(200)
 		} else {
 			errorjson := Models.JsonError{"ORM error", errstring}

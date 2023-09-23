@@ -13,7 +13,7 @@ func ConvertFromStringToUint(s *string) (number uint, success bool) {
 	}
 }
 
-func GetUserIDasUint(c *gin.Context) uint {
+func GetUserIdAsUint(c *gin.Context) uint {
 	result, _ := c.Get("UserID")
 	id := result.(uint)
 	return id

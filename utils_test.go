@@ -190,6 +190,7 @@ func TestAddCategory(t *testing.T) {
 	defer CleanupDatabase()
 
 	shoppingSitesCategory := Models.Category{
+		Model:    gorm.Model{ID: 4},
 		ParentID: 0,
 		Name:     "Shopping",
 		Shared:   false,
@@ -200,12 +201,10 @@ func TestAddCategory(t *testing.T) {
 	Handlers.AddCategory(c)
 
 	assert.Equal(t, 200, c.Writer.Status())
-	assert.Equal(t, c.Writer.Header().Get("Content-Type"), "application/json; charset=utf-8")
 
 	var category Models.Category
-	if err := UnmarshalObject(c, &category); err != nil {
-		t.Error(err)
-	}
+
+	Models.Database.Take(&category, shoppingSitesCategory.ID)
 
 	assert.Equal(t, category.Name, shoppingSitesCategory.Name)
 	assert.Equal(t, category.OwnerID, Users["User"].ID) // Should be set to "Users" "Id" because "User" created it
