@@ -14,17 +14,13 @@ import (
 
 var Users = map[string]*Models.User{
 	"Administrator": &Models.User{
-		Model: gorm.Model{
-			ID: 1,
-		},
+		Model:         gorm.Model{ID: 1},
 		Name:          "Administrator",
 		Password:      "admin",
 		Administrator: true,
 	},
 	"User": &Models.User{
-		Model: gorm.Model{
-			ID: 2,
-		},
+		Model:            gorm.Model{ID: 2},
 		Name:             "User",
 		Password:         "user",
 		Administrator:    false,
@@ -34,30 +30,31 @@ var Users = map[string]*Models.User{
 
 var Categories = map[string]*Models.Category{
 	"IT": &Models.Category{
-		Model: gorm.Model{
-			ID: 1,
-		},
+		Model:    gorm.Model{ID: 1},
 		ParentID: 0,
 		Name:     "IT",
 		Shared:   false,
 		OwnerID:  2,
 	},
 	"Books": &Models.Category{
-		Model: gorm.Model{
-			ID: 2,
-		},
+		Model:    gorm.Model{ID: 2},
 		ParentID: 0,
 		Name:     "Books",
 		Shared:   true,
 		OwnerID:  1,
 	},
 	"Programming": &Models.Category{
-		Model: gorm.Model{
-			ID: 3,
-		},
+		Model:    gorm.Model{ID: 3},
 		ParentID: 1,
 		Name:     "Programming",
-		Shared:   true,
+		Shared:   false,
+		OwnerID:  2,
+	},
+	"C#": &Models.Category{
+		Model:    gorm.Model{ID: 4},
+		ParentID: 3,
+		Name:     "C#",
+		Shared:   false,
 		OwnerID:  2,
 	},
 }
@@ -90,6 +87,7 @@ func PopulateDatabase() {
 	Models.Database.Model(Categories["Books"]).Association("UsersAccess").Append(Users["User"])
 	Models.Database.Model(Categories["IT"]).Association("UsersAccess").Append(Users["User"])
 	Models.Database.Model(Categories["Programming"]).Association("UsersAccess").Append(Users["User"])
+	Models.Database.Model(Categories["C#"]).Association("UsersAccess").Append(Users["User"])
 }
 func CleanupDatabase() {
 	Models.Database.Exec("Drop table user_categories")
@@ -314,5 +312,17 @@ func TestEditCategory(t *testing.T) {
 }
 
 func TestDeleteCategory(t *testing.T) {
+
+	//case 1: wrong user, that has no access on category
+	c := GetGinContextAsAdministrator("DELETE", "/apiv1/categories/3", nil)
+	Handlers.DeleteCategory(c)
+
+	assert.Equal(t, 400, c.Writer.Status())
+	var category Models.Category
+	if result := Models.Database.Take(&category, 3); result.Error == nil {
+		t.Error("Category has not been deleted")
+	}
+	//TODO: also check if the associations has been deleted
+	//Models.Database.Select("")
 
 }
