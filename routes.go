@@ -26,8 +26,7 @@ func InitializeRoutes() {
 				categoryRoutesIDUsers := categoryRoutesID.Group("/permissions")
 				{
 					categoryRoutesIDUsers.GET("/", Handlers.GetUsersForCategory)
-					categoryRoutesIDUsers.POST("/", Handlers.AddUsersForCategoryOnce)
-					categoryRoutesIDUsers.POST("/inherit", Handlers.AddUsersForCategoryInherit)
+					categoryRoutesIDUsers.POST("/", Handlers.AddUsersForCategory)
 					categoryRoutesIDUsers.DELETE("/", Handlers.RemoveUsersFromCategory)
 					categoryRoutesIDUsers.DELETE("/:user_id")
 				}

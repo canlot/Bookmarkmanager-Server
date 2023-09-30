@@ -74,3 +74,51 @@ func DeleteCategory(categoryId uint, UserId uint) bool {
 	}
 	return true
 }
+
+func AddUsersForCategory(userID uint, categoryID uint, users *[]User) error {
+	category := Category{}
+	if result := Database.Find(&category, "id=?", categoryID); result.Error != nil {
+		return result.Error
+	}
+	if category.OwnerID != userID {
+		return errors.New("User != Owner")
+	}
+	if category.ParentID != 0 { //only to level categories can be shared
+		return errors.New("Cannot grant permission because it is not a top level category")
+	}
+
+	if success := category.AddUsersToCategoryInherit(users); success != true {
+		return errors.New("Could not add users to category and child categories")
+	}
+
+	return nil
+}
+func RemoveUsersFromCategory(userID uint, categoryID uint, users *[]User) error {
+	category := Category{}
+	if result := Database.Find(&category, "id=?", categoryID); result.Error != nil {
+		return errors.New("could not find category")
+	}
+	if category.OwnerID != userID {
+		return errors.New("OwnerID != userID")
+	}
+	if category.ParentID != 0 { //only to level categories can be shared
+		return errors.New("Cannot remove permission because it is not a top level category")
+	}
+	if success := category.RemoveUsersFromCategoryInherit(users); success != true {
+		return errors.New("Could not remove permissions from categories inherit")
+	}
+	return nil
+}
+
+func GetUsersForCategory(categoryID uint) (users []User, success bool) {
+	category := Category{}
+	if result := Database.Find(&category, "id = ?", categoryID); result.Error == nil {
+		if result1 := Database.Model(&category).Association("UsersAccess"); result1.Error == nil {
+			result2 := result1.Find(&category.UsersAccess)
+			if result2 == nil {
+				return category.UsersAccess, true
+			}
+		}
+	}
+	return users, false
+}
