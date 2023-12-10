@@ -8,7 +8,7 @@ import (
 var router *gin.Engine
 
 func main() {
-	Models.DatabaseConfig(Models.Sqlite, Models.Production)
+	Models.DatabaseConfig(Models.Sqlite, Models.Test)
 	gin.SetMode(gin.ReleaseMode)
 	router = gin.Default()
 	InitializeRoutes()

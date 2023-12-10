@@ -45,4 +45,23 @@ func DatabaseConfig(databaseType DatabaseType, environment Environment) {
 		panic("Failed to connect to database")
 	}
 	Database.AutoMigrate(&User{}, &Category{}, &Bookmark{})
+
+	if environment == Test {
+		admin := User{
+			Model:         gorm.Model{ID: 1},
+			Name:          "Administrator",
+			Password:      "admin",
+			Administrator: true,
+		}
+		itcategory := Category{
+			Model:    gorm.Model{ID: 1},
+			ParentID: 0,
+			Name:     "IT",
+			Shared:   false,
+			OwnerID:  2,
+		}
+		Database.Create(&admin)
+		Database.Create(&itcategory)
+		Database.Model(&itcategory).Association("UsersAccess").Append(&admin)
+	}
 }
