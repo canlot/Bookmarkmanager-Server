@@ -26,3 +26,11 @@ func GetAllUsers() (users []User, success bool) {
 	}
 	return users, false
 }
+func UsersExist(users []User) bool {
+	for i := range users {
+		if result := Database.Take(&(users[i])); result.Error != nil {
+			return false
+		}
+	}
+	return true
+}

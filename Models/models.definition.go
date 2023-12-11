@@ -10,6 +10,7 @@ type Category struct {
 	gorm.Model
 	ParentID    uint       `json:"parentid"`
 	Name        string     `json:"name"`
+	Description string     `json:"description"`
 	Shared      bool       `json:"shared"`
 	OwnerID     uint       `json:"ownerid"`
 	Bookmarks   []Bookmark `json:"-"`
@@ -18,8 +19,10 @@ type Category struct {
 
 type Bookmark struct {
 	gorm.Model
-	CategoryID uint   `json:"categoryid"`
-	Url        string `json:"url"`
+	CategoryID  uint   `json:"categoryid"`
+	Url         string `json:"url"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
 }
 
 type User struct {

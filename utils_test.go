@@ -85,6 +85,7 @@ func PopulateDatabase() {
 
 	Models.Database.Create(Users["Administrator"])
 	Models.Database.Create(Users["User"])
+	Models.Database.Create(Users["Jakob"])
 
 	Models.Database.Create(Categories["IT"])
 	Models.Database.Create(Categories["Books"])
@@ -352,7 +353,7 @@ func userExistInList(username string, users []Models.User) bool {
 	return false
 }
 
-func TestChangeUserPermissionCategory(t *testing.T) {
+func TestChangeUserPermissionCategoryWithExistingUsers(t *testing.T) {
 	PopulateDatabase()
 	defer CleanupDatabase()
 
@@ -392,4 +393,54 @@ func TestChangeUserPermissionCategory(t *testing.T) {
 	assert.Equal(t, true, userExistInList("Administrator", users))
 	assert.Equal(t, false, userExistInList("User", users))
 	assert.Equal(t, true, userExistInList("Jakob", users))
+
+}
+
+func TestChangeUserPermissionCategoryWithNonExistingUsers(t *testing.T) {
+	PopulateDatabase()
+	defer CleanupDatabase()
+
+	usersWithAccess := []Models.User{
+		Models.User{
+			Model:         gorm.Model{ID: 1},
+			Name:          "Administrator",
+			Password:      "admin",
+			Administrator: true,
+		},
+		Models.User{
+			Model:         gorm.Model{ID: 3},
+			Name:          "Jakob",
+			Password:      "test",
+			Administrator: false,
+		},
+		Models.User{
+			Model:         gorm.Model{ID: 4},
+			Name:          "Bob",
+			Administrator: false,
+		},
+	}
+
+	c := GetGinContextAsAdministrator("PUT", "/apiv1/categories/2/permissions", &usersWithAccess)
+	c.AddParam("category_id", "2")
+	Handlers.EditUsersForCategory(c)
+
+	categoryBooks := Models.Category{
+		Model:    gorm.Model{ID: 2},
+		ParentID: 0,
+		Name:     "Books",
+		Shared:   true,
+		OwnerID:  1,
+	}
+
+	var users []Models.User
+
+	Models.Database.Model(&categoryBooks).Association("UsersAccess").Find(&users)
+
+	assert.Equal(t, true, userExistInList("Administrator", users))
+	assert.Equal(t, true, userExistInList("User", users))
+	assert.Equal(t, false, userExistInList("Jakob", users))
+	assert.Equal(t, false, userExistInList("Bob", users))
+
+	assert.Equal(t, 400, c.Writer.Status())
+
 }

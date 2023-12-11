@@ -22,6 +22,8 @@ func InitializeRoutes() {
 				{
 					categoryRoutesIDBookmarks.GET("/", Handlers.GetBookmarksWithCategoryId)
 					categoryRoutesIDBookmarks.POST("/", Handlers.AddBookmarkToCategory)
+					categoryRoutesIDBookmarks.PUT("/:bookmark_id", Handlers.EditBookmarkWithBookmarkId)
+					categoryRoutesIDBookmarks.DELETE("/:bookmark_id", Handlers.DeleteBookmarkWithBookmarkId)
 				}
 				categoryRoutesIDUsers := categoryRoutesID.Group("/permissions")
 				{

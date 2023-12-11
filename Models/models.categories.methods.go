@@ -72,7 +72,7 @@ func (category Category) AddUsersToCategory(users *[]User) (success bool) {
 	if len(uniqueUsers) == 0 {
 		return false
 	}
-	if result := Database.Model(&category).Association("UsersAccess").Append(&uniqueUsers); result != nil {
+	if result := Database.Model(&category).Omit("UsersAccess").Association("UsersAccess").Append(&uniqueUsers); result != nil {
 		return false
 	}
 	if result := Database.Model(&category).Update("shared", "1"); result.Error != nil {

@@ -126,7 +126,9 @@ func AddUsersForCategory(userID uint, categoryID uint, users *[]User) error {
 	if category.ParentID != 0 { //only to level categories can be shared
 		return errors.New("Cannot grant permission because it is not a top level category")
 	}
-
+	if !UsersExist(*users) {
+		return errors.New("Not all users exist in database")
+	}
 	if success := category.AddUsersToCategoryInherit(users); success != true {
 		return errors.New("Could not add users to category and child categories")
 	}
@@ -143,6 +145,9 @@ func RemoveUsersFromCategory(userID uint, categoryID uint, users *[]User) error 
 	}
 	if category.ParentID != 0 { //only to level categories can be shared
 		return errors.New("Cannot remove permission because it is not a top level category")
+	}
+	if !UsersExist(*users) {
+		return errors.New("Not all users exist in database")
 	}
 	if success := category.RemoveUsersFromCategoryInherit(users); success != true {
 		return errors.New("Could not remove permissions from categories inherit")
