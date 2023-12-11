@@ -37,11 +37,11 @@ func AddCategory(c *gin.Context) {
 		c.JSON(400, err)
 		return
 	}
-	if err := Models.AddCategory(Helpers.GetUserIdAsUint(c), category); err != nil {
+	if returnCategory, err := Models.AddCategory(Helpers.GetUserIdAsUint(c), category); err != nil {
 		c.JSON(400, err)
 		return
 	} else {
-		c.Status(200)
+		c.JSON(200, returnCategory)
 		return
 	}
 
@@ -52,11 +52,12 @@ func EditCategory(c *gin.Context) {
 		c.JSON(400, err)
 		return
 	}
-	if err := Models.EditCategory(Helpers.GetUserIdAsUint(c), category); err != nil {
+	if returnCategory, err := Models.EditCategory(Helpers.GetUserIdAsUint(c), category); err != nil {
 		c.JSON(400, err)
 		return
+	} else {
+		c.JSON(200, returnCategory)
 	}
-	c.Status(200)
 }
 
 func DeleteCategory(c *gin.Context) {
@@ -90,6 +91,27 @@ func GetUsersForCategory(c *gin.Context) {
 		error := Models.JsonError{"No Users", "No Users for this category"}
 		c.JSON(400, error)
 	}
+}
+
+func EditUsersForCategory(c *gin.Context) {
+	idstring := c.Param("category_id")
+	var users []Models.User
+	var id uint
+	var success bool
+	if id, success = Helpers.ConvertFromStringToUint(&idstring); success == false {
+		c.JSON(400, errors.New("Id could not be converted"))
+		return
+	}
+	if err := c.BindJSON(&users); err != nil {
+		c.JSON(400, err)
+		return
+	}
+	if err := Models.EditUsersForCategory(Helpers.GetUserIdAsUint(c), id, &users); err != nil {
+		c.JSON(400, err)
+		return
+	}
+	c.Status(200)
+	return
 }
 
 func AddUsersForCategory(c *gin.Context) {

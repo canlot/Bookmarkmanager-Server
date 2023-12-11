@@ -21,6 +21,7 @@ type Environment int
 const (
 	Production Environment = iota
 	Test
+	Debug
 )
 
 var Database *gorm.DB
@@ -34,7 +35,7 @@ func DatabaseConfig(databaseType DatabaseType, environment Environment) {
 		var dsn string
 		if environment == Production {
 			dsn = fmt.Sprintf("%s:%s@(%s:%d)/%s?charset=utf8&parseTime=True&loc=Local", "gotest", "gotest", "localhost", 3306, "gotest")
-		} else if environment == Test {
+		} else if environment == Test || environment == Debug {
 			dsn = fmt.Sprintf("%s:%s@(%s:%d)/%s?charset=utf8&parseTime=True&loc=Local", "gotest", "gotest", "localhost", 3306, "test")
 		}
 		Database, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
@@ -46,7 +47,7 @@ func DatabaseConfig(databaseType DatabaseType, environment Environment) {
 	}
 	Database.AutoMigrate(&User{}, &Category{}, &Bookmark{})
 
-	if environment == Test {
+	if environment == Debug {
 		admin := User{
 			Model:         gorm.Model{ID: 1},
 			Name:          "Administrator",
@@ -58,7 +59,7 @@ func DatabaseConfig(databaseType DatabaseType, environment Environment) {
 			ParentID: 0,
 			Name:     "IT",
 			Shared:   false,
-			OwnerID:  2,
+			OwnerID:  1,
 		}
 		Database.Create(&admin)
 		Database.Create(&itcategory)

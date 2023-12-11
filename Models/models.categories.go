@@ -6,18 +6,18 @@ import "errors"
 func GetCategories(UserId uint, categoryID uint) (categories []Category, err error) {
 	var user User
 	if result := Database.Take(&user, UserId); result.Error != nil {
-		return []Category{}, errors.New("Database error")
+		return nil, errors.New("Database error")
 	}
 
 	if result := Database.Model(&user).Association("CategoriesAccess").Find(&categories, "parent_id = ?", categoryID); result == nil {
 		return categories, nil
 	} else {
-		return []Category{}, errors.New(result.Error())
+		return nil, errors.New(result.Error())
 	}
 
 }
 
-func AddCategory(UserId uint, category Category) error {
+func AddCategory(UserId uint, category Category) (Category, error) {
 	var user User
 	if category.OwnerID == 0 || category.OwnerID != UserId {
 		category.OwnerID = UserId
@@ -26,7 +26,7 @@ func AddCategory(UserId uint, category Category) error {
 		if category.ParentID == 0 {
 			if result := Database.Create(&category); result.Error == nil {
 				if result := Database.Model(&category).Association("UsersAccess").Append(&user); result == nil {
-					return nil
+					return category, nil
 				}
 			}
 		} else {
@@ -35,7 +35,7 @@ func AddCategory(UserId uint, category Category) error {
 				if parentCategory.OwnerID == category.OwnerID {
 					if result := Database.Create(&category); result.Error == nil {
 						if result := Database.Model(&category).Association("UsersAccess").Append(&user); result == nil {
-							return nil
+							return category, nil
 						}
 					}
 				}
@@ -43,22 +43,22 @@ func AddCategory(UserId uint, category Category) error {
 		}
 
 	}
-	return errors.New("Error occured")
+	return category, errors.New("Error occured")
 }
 
-func EditCategory(userId uint, category Category) error {
+func EditCategory(userId uint, category Category) (Category, error) {
 	if category.OwnerID != userId {
-		return errors.New("Category OwnerID is not UserId")
+		return category, errors.New("Category OwnerID is not UserId")
 	}
 	var curCategory Category
 	if result := Database.Take(&curCategory, category.ID); result.Error != nil {
-		return errors.New("Database error or category not found")
+		return category, errors.New("Database error or category not found")
 	}
 	if category.ParentID != curCategory.ParentID {
-		return errors.New("ParentId cannot be changed")
+		return category, errors.New("ParentId cannot be changed")
 	}
 	Database.Save(&category)
-	return nil
+	return category, nil
 }
 
 func DeleteCategory(categoryId uint, UserId uint) bool {
@@ -73,6 +73,46 @@ func DeleteCategory(categoryId uint, UserId uint) bool {
 		return false
 	}
 	return true
+}
+func EditUsersForCategory(userID uint, categoryID uint, users *[]User) error {
+
+	var currentUsers []User
+	var success bool
+	if currentUsers, success = GetUsersForCategory(categoryID); success != true {
+		return errors.New("Could not get users for this category")
+	}
+
+	usersToAdd := getUsersThatAreOnlyOnLeftSide(users, &currentUsers)
+	usersToRemove := getUsersThatAreOnlyOnLeftSide(&currentUsers, users)
+
+	if len(usersToAdd) != 0 {
+		if err := AddUsersForCategory(userID, categoryID, &usersToAdd); err != nil {
+			return err
+		}
+	}
+	if len(usersToRemove) != 0 {
+		if err := RemoveUsersFromCategory(userID, categoryID, &usersToRemove); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func getUsersThatAreOnlyOnLeftSide(usersLeft *[]User, usersRight *[]User) []User {
+	var users []User
+	for i := range *usersLeft {
+		found := false
+		for j := range *usersRight {
+			if (*usersLeft)[i].ID == (*usersRight)[j].ID {
+				found = true
+				break
+			}
+		}
+		if !found {
+			users = append(users, (*usersLeft)[i])
+		}
+	}
+	return users
 }
 
 func AddUsersForCategory(userID uint, categoryID uint, users *[]User) error {

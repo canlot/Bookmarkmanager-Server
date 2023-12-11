@@ -1,7 +1,5 @@
 package Models
 
-import "fmt"
-
 func (category Category) RemoveUsersFromCategoryInherit(users *[]User) (success bool) {
 	if !category.RemoveUsersFromCategory(users) {
 		return true
@@ -22,7 +20,7 @@ func (category Category) AddUsersToCategoryInherit(users *[]User) (success bool)
 		return false
 	}
 	var childCategories []Category
-	if result := Database.Find(&childCategories, "parent_id = ?", category.ParentID); result.Error != nil {
+	if result := Database.Find(&childCategories, "parent_id = ?", category.ID); result.Error != nil {
 		return false
 	}
 	for i := range childCategories {
@@ -46,7 +44,7 @@ func (category Category) RemoveUsersFromCategory(users *[]User) (success bool) {
 	if len(uniqueUsers) == 0 {
 		return false
 	}
-	if result := Database.Model(&category).Association("UsersAccess").Delete(uniqueUsers); result != nil {
+	if result := Database.Model(&category).Association("UsersAccess").Delete(&uniqueUsers); result != nil {
 		return false
 	}
 	if leftusers, success := category.GetUsersForCategory(); success != true {
@@ -74,7 +72,7 @@ func (category Category) AddUsersToCategory(users *[]User) (success bool) {
 	if len(uniqueUsers) == 0 {
 		return false
 	}
-	if result := Database.Model(&category).Association("UsersAccess").Append(uniqueUsers); result != nil {
+	if result := Database.Model(&category).Association("UsersAccess").Append(&uniqueUsers); result != nil {
 		return false
 	}
 	if result := Database.Model(&category).Update("shared", "1"); result.Error != nil {
@@ -161,11 +159,11 @@ func (category Category) DeleteAll() bool {
 	if result := Database.Model(&category).Association("UsersAccess").Clear(); result != nil {
 		return false
 	}
-	if result := Database.Delete(Bookmark{}, "category_id = ?", category.ID); result.Error != nil {
+	if result := Database.Delete(&Bookmark{}, "category_id = ?", category.ID); result.Error != nil {
 		return false
 	}
 	if result := Database.Delete(&category); result.Error != nil {
-		fmt.Println(result.Error)
+		//fmt.Println(result.Error)
 		return false
 	}
 	return true

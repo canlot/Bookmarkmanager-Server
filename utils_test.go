@@ -26,6 +26,13 @@ var Users = map[string]*Models.User{
 		Administrator:    false,
 		CategoriesAccess: nil,
 	},
+	"Jakob": &Models.User{
+		Model:            gorm.Model{ID: 3},
+		Name:             "Jakob",
+		Password:         "test",
+		Administrator:    false,
+		CategoriesAccess: nil,
+	},
 }
 
 var Categories = map[string]*Models.Category{
@@ -82,6 +89,7 @@ func PopulateDatabase() {
 	Models.Database.Create(Categories["IT"])
 	Models.Database.Create(Categories["Books"])
 	Models.Database.Create(Categories["Programming"])
+	Models.Database.Create(Categories["C#"])
 
 	Models.Database.Model(Categories["Books"]).Association("UsersAccess").Append(Users["Administrator"])
 	Models.Database.Model(Categories["Books"]).Association("UsersAccess").Append(Users["User"])
@@ -188,7 +196,7 @@ func TestAddCategory(t *testing.T) {
 	defer CleanupDatabase()
 
 	shoppingSitesCategory := Models.Category{
-		Model:    gorm.Model{ID: 4},
+		Model:    gorm.Model{ID: 5},
 		ParentID: 0,
 		Name:     "Shopping",
 		Shared:   false,
@@ -214,7 +222,7 @@ func TestAddCategoryChild(t *testing.T) {
 	defer CleanupDatabase()
 
 	golangCategory := Models.Category{
-		Model:    gorm.Model{ID: 4},
+		Model:    gorm.Model{ID: 5},
 		ParentID: 3,
 		Name:     "Golang",
 		Shared:   false,
@@ -312,12 +320,20 @@ func TestEditCategory(t *testing.T) {
 }
 
 func TestDeleteCategory(t *testing.T) {
-
+	PopulateDatabase()
+	defer CleanupDatabase()
 	//case 1: wrong user, that has no access on category
-	c := GetGinContextAsAdministrator("DELETE", "/apiv1/categories/3", nil)
+	c := GetGinContextAsAdministrator("DELETE", "/apiv1/categories", nil)
+	c.AddParam("category_id", "3")
 	Handlers.DeleteCategory(c)
 
 	assert.Equal(t, 400, c.Writer.Status())
+
+	c = GetGinContextAsUser("DELETE", "/apiv1/categories", nil)
+	c.AddParam("category_id", "3")
+	Handlers.DeleteCategory(c)
+
+	assert.Equal(t, 200, c.Writer.Status())
 	var category Models.Category
 	if result := Models.Database.Take(&category, 3); result.Error == nil {
 		t.Error("Category has not been deleted")
@@ -325,4 +341,55 @@ func TestDeleteCategory(t *testing.T) {
 	//TODO: also check if the associations has been deleted
 	//Models.Database.Select("")
 
+}
+
+func userExistInList(username string, users []Models.User) bool {
+	for i := 0; i < len(users); i++ {
+		if users[i].Name == username {
+			return true
+		}
+	}
+	return false
+}
+
+func TestChangeUserPermissionCategory(t *testing.T) {
+	PopulateDatabase()
+	defer CleanupDatabase()
+
+	usersWithAccess := []Models.User{
+		Models.User{
+			Model:         gorm.Model{ID: 1},
+			Name:          "Administrator",
+			Password:      "admin",
+			Administrator: true,
+		},
+		Models.User{
+			Model:         gorm.Model{ID: 3},
+			Name:          "Jakob",
+			Password:      "test",
+			Administrator: false,
+		},
+	}
+
+	c := GetGinContextAsAdministrator("PUT", "/apiv1/categories/2/permissions", &usersWithAccess)
+	c.AddParam("category_id", "2")
+	Handlers.EditUsersForCategory(c)
+
+	assert.Equal(t, 200, c.Writer.Status())
+
+	categoryBooks := Models.Category{
+		Model:    gorm.Model{ID: 2},
+		ParentID: 0,
+		Name:     "Books",
+		Shared:   true,
+		OwnerID:  1,
+	}
+
+	var users []Models.User
+
+	Models.Database.Model(&categoryBooks).Association("UsersAccess").Find(&users)
+
+	assert.Equal(t, true, userExistInList("Administrator", users))
+	assert.Equal(t, false, userExistInList("User", users))
+	assert.Equal(t, true, userExistInList("Jakob", users))
 }
