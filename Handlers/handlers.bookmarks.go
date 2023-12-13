@@ -62,7 +62,7 @@ func EditBookmarkWithBookmarkId(c *gin.Context) {
 	}
 
 	var bookmark Models.Bookmark
-	if error := c.BindJSON(&bookmark); error != nil {
+	if err := c.BindJSON(&bookmark); err != nil {
 		c.JSON(400, "Request could not be proceed")
 	}
 
@@ -70,8 +70,34 @@ func EditBookmarkWithBookmarkId(c *gin.Context) {
 		c.JSON(400, errors.New("Different ids"))
 	}
 
+	err := Models.EditBookmark(Helpers.GetUserIdAsUint(c), categoryid, bookmarkid, bookmark)
+
+	if err != nil {
+		c.JSON(400, err)
+	}
+
+	c.Status(200)
+
 }
 func DeleteBookmarkWithBookmarkId(c *gin.Context) {
 	categoryidstring := c.Param("category_id")
 	bookmarkidstring := c.Param("bookmark_id")
+
+	var categoryid uint
+	var bookmarkid uint
+	var success bool
+
+	if categoryid, success = Helpers.ConvertFromStringToUint(&categoryidstring); success != true {
+		c.JSON(400, errors.New("Could not convert string"))
+	}
+	if bookmarkid, success = Helpers.ConvertFromStringToUint(&bookmarkidstring); success != true {
+		c.JSON(400, errors.New("Could not convert string"))
+	}
+
+	err := Models.DeleteBookmark(Helpers.GetUserIdAsUint(c), categoryid, bookmarkid)
+
+	if err != nil {
+		c.JSON(400, err)
+	}
+	c.Status(200)
 }
