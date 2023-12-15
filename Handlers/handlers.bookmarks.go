@@ -26,6 +26,9 @@ func GetBookmarksWithCategoryId(c *gin.Context) {
 		c.JSON(400, error)
 	}
 }
+func SearchBookmarks(c *gin.Context) {
+
+}
 func AddBookmarkToCategory(c *gin.Context) {
 	idstring := c.Param("category_id")
 	var bookmark Models.Bookmark

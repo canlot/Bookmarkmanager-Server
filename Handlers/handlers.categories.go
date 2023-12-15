@@ -30,6 +30,9 @@ func GetCategories(c *gin.Context) {
 	}
 
 }
+func SearchCategories(c *gin.Context) {
+
+}
 
 func AddCategory(c *gin.Context) {
 	var category Models.Category
