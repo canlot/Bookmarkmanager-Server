@@ -11,7 +11,7 @@ func InitializeRoutes() {
 		{
 			categoryRoutes.GET("/", Handlers.GetCategories)
 			categoryRoutes.POST("/", Handlers.AddCategory)
-			categoryRoutes.GET("/search", Handlers.SearchCategories)
+			categoryRoutes.GET("/search/:search_text", Handlers.SearchCategories)
 
 			categoryRoutesID := categoryRoutes.Group("/:category_id")
 			{
@@ -45,7 +45,7 @@ func InitializeRoutes() {
 			bookmarkRoutes.PUT("/:id")
 			bookmarkRoutes.DELETE("/:id")
 
-			bookmarkRoutes.GET("/search", Handlers.SearchBookmarks)
+			bookmarkRoutes.GET("/search/:search_text", Handlers.SearchBookmarks)
 		}
 
 		userRoutes := apiRoutes.Group("/users")

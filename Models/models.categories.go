@@ -16,7 +16,16 @@ func GetCategories(UserId uint, categoryID uint) (categories []Category, err err
 	}
 
 }
-
+func SearchCategories(UserId uint, searchText string) ([]Category, error) {
+	searchText = "%" + searchText + "%"
+	var user User
+	if db := Database.Take(&user, UserId); db.Error != nil {
+		return nil, db.Error
+	}
+	Database.Model(&user).Association("CategoriesAccess")
+	categories := Database.Where("owner_id = ?", UserId).
+		Where(Database.Where("name LIKE ?", searchText).Or("description LIKE ?", searchText))
+}
 func AddCategory(UserId uint, category Category) (Category, error) {
 	var user User
 	if category.OwnerID == 0 || category.OwnerID != UserId {

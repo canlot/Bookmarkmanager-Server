@@ -31,6 +31,10 @@ func GetCategories(c *gin.Context) {
 
 }
 func SearchCategories(c *gin.Context) {
+	searchText := c.Param("search_text")
+	if len(searchText) < 2 {
+		c.JSON(400, errors.New("At least 3 characters"))
+	}
 
 }
 
