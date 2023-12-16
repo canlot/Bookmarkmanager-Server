@@ -27,7 +27,15 @@ func GetBookmarksWithCategoryId(c *gin.Context) {
 	}
 }
 func SearchBookmarks(c *gin.Context) {
-
+	searchText := c.Param("search_text")
+	if len(searchText) < 2 {
+		c.JSON(400, errors.New("At least 3 characters"))
+	}
+	bookmarks, err := Models.SearchBookmarks(Helpers.GetUserIdAsUint(c), searchText)
+	if err != nil {
+		c.JSON(400, err)
+	}
+	c.JSON(200, bookmarks)
 }
 func AddBookmarkToCategory(c *gin.Context) {
 	idstring := c.Param("category_id")

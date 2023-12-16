@@ -35,7 +35,11 @@ func SearchCategories(c *gin.Context) {
 	if len(searchText) < 2 {
 		c.JSON(400, errors.New("At least 3 characters"))
 	}
-
+	categories, err := Models.SearchCategories(Helpers.GetUserIdAsUint(c), searchText)
+	if err != nil {
+		c.JSON(400, err)
+	}
+	c.JSON(200, categories)
 }
 
 func AddCategory(c *gin.Context) {

@@ -1,6 +1,9 @@
 package Models
 
-import "errors"
+import (
+	"Bookmarkmanager-Server/Helpers"
+	"errors"
+)
 
 // get all categories for permitted user with parent_id
 func GetCategories(UserId uint, categoryID uint) (categories []Category, err error) {
@@ -17,14 +20,21 @@ func GetCategories(UserId uint, categoryID uint) (categories []Category, err err
 
 }
 func SearchCategories(UserId uint, searchText string) ([]Category, error) {
-	searchText = "%" + searchText + "%"
 	var user User
 	if db := Database.Take(&user, UserId); db.Error != nil {
 		return nil, db.Error
 	}
-	Database.Model(&user).Association("CategoriesAccess")
-	categories := Database.Where("owner_id = ?", UserId).
-		Where(Database.Where("name LIKE ?", searchText).Or("description LIKE ?", searchText))
+	var allCategories []Category
+	if err := Database.Model(&user).Association("CategoriesAccess").Find(&allCategories); err != nil {
+		return nil, err
+	}
+	var categories []Category
+	for i := range allCategories {
+		if Helpers.ContainsInAnyString(searchText, allCategories[i].Name, allCategories[i].Description) {
+			categories = append(categories, allCategories[i])
+		}
+	}
+	return categories, nil
 }
 func AddCategory(UserId uint, category Category) (Category, error) {
 	var user User
