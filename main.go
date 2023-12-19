@@ -1,7 +1,9 @@
 package main
 
 import (
+	"Bookmarkmanager-Server/Configuration"
 	"Bookmarkmanager-Server/Models"
+	"Bookmarkmanager-Server/Test"
 	"context"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -14,8 +16,9 @@ import (
 var router *gin.Engine
 
 func main() {
-	Models.DatabaseConfig(Models.Sqlite, Models.Debug)
-
+	Configuration.Environment = Configuration.Test
+	Models.DatabaseConfig()
+	setUpTestData()
 	gin.SetMode(gin.ReleaseMode)
 
 	router = gin.Default()
@@ -43,4 +46,10 @@ func main() {
 		log.Fatal("Server forced to shutdown: ", err)
 	}
 	log.Println("Server exiting")
+}
+
+func setUpTestData() {
+	if Configuration.Environment == Configuration.Test || Configuration.Environment == Configuration.Debug {
+		Test.PopulateDatabase()
+	}
 }

@@ -1,158 +1,16 @@
-package main
+package Test
 
 import (
 	"Bookmarkmanager-Server/Handlers"
 	"Bookmarkmanager-Server/Models"
-	"bytes"
-	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"github.com/go-playground/assert/v2"
 	"gorm.io/gorm"
-	"net/http/httptest"
 	"testing"
 )
 
-var Users = map[string]*Models.User{
-	"Administrator": &Models.User{
-		Model:         gorm.Model{ID: 1},
-		Name:          "Administrator",
-		Password:      "admin",
-		Administrator: true,
-	},
-	"User": &Models.User{
-		Model:            gorm.Model{ID: 2},
-		Name:             "User",
-		Password:         "user",
-		Administrator:    false,
-		CategoriesAccess: nil,
-	},
-	"Jakob": &Models.User{
-		Model:            gorm.Model{ID: 3},
-		Name:             "Jakob",
-		Password:         "test",
-		Administrator:    false,
-		CategoriesAccess: nil,
-	},
-}
-
-var Categories = map[string]*Models.Category{
-	"IT": &Models.Category{
-		Model:    gorm.Model{ID: 1},
-		ParentID: 0,
-		Name:     "IT",
-		Shared:   false,
-		OwnerID:  2,
-	},
-	"Books": &Models.Category{
-		Model:    gorm.Model{ID: 2},
-		ParentID: 0,
-		Name:     "Books",
-		Shared:   true,
-		OwnerID:  1,
-	},
-	"Programming": &Models.Category{
-		Model:    gorm.Model{ID: 3},
-		ParentID: 1,
-		Name:     "Programming",
-		Shared:   false,
-		OwnerID:  2,
-	},
-	"C#": &Models.Category{
-		Model:    gorm.Model{ID: 4},
-		ParentID: 3,
-		Name:     "C#",
-		Shared:   false,
-		OwnerID:  2,
-	},
-}
-
-type bodyLogWriter struct {
-	gin.ResponseWriter
-	body *bytes.Buffer
-}
-
-func (w bodyLogWriter) Write(b []byte) (int, error) {
-	w.body.Write(b)
-	return w.ResponseWriter.Write(b)
-}
-
-func InitializeDatabase() {
-	Models.DatabaseConfig(Models.Sqlite, Models.Test)
-}
-
-func PopulateDatabase() {
-	InitializeDatabase()
-
-	Models.Database.Create(Users["Administrator"])
-	Models.Database.Create(Users["User"])
-	Models.Database.Create(Users["Jakob"])
-
-	Models.Database.Create(Categories["IT"])
-	Models.Database.Create(Categories["Books"])
-	Models.Database.Create(Categories["Programming"])
-	Models.Database.Create(Categories["C#"])
-
-	Models.Database.Model(Categories["Books"]).Association("UsersAccess").Append(Users["Administrator"])
-	Models.Database.Model(Categories["Books"]).Association("UsersAccess").Append(Users["User"])
-	Models.Database.Model(Categories["IT"]).Association("UsersAccess").Append(Users["User"])
-	Models.Database.Model(Categories["Programming"]).Association("UsersAccess").Append(Users["User"])
-	Models.Database.Model(Categories["C#"]).Association("UsersAccess").Append(Users["User"])
-}
-func CleanupDatabase() {
-	Models.Database.Exec("Drop table user_categories")
-	Models.Database.Exec("Drop table bookmarks")
-	Models.Database.Exec("Drop table categories")
-	Models.Database.Exec("Drop table users")
-}
-
-func GetGinContext(username string, password string, method string, route string, body interface{}) *gin.Context {
-	gin.SetMode(gin.TestMode)
-	c, _ := gin.CreateTestContext(httptest.NewRecorder())
-
-	var buf *bytes.Buffer
-	if body != nil {
-		jsonValue, _ := json.Marshal(body)
-		buf = bytes.NewBuffer(jsonValue)
-	} else {
-		buf = new(bytes.Buffer)
-	}
-
-	c.Request = httptest.NewRequest(method, route, buf)
-	c.Request.SetBasicAuth(username, password)
-	blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
-	c.Writer = blw
-
-	return c
-}
-
-func GetGinContextAsAdministrator(method string, route string, body interface{}) *gin.Context {
-	username := "Administrator"
-	password := "admin"
-
-	c := GetGinContext(username, password, method, route, body)
-	c.Set("UserID", uint(1))
-
-	return c
-}
-
-func GetGinContextAsUser(method string, route string, body interface{}) *gin.Context {
-	username := "User"
-	password := "user"
-
-	c := GetGinContext(username, password, method, route, body)
-	c.Set("UserID", uint(2))
-	return c
-}
-
-func UnmarshalObject(c *gin.Context, object interface{}) error {
-	err := json.Unmarshal([]byte(c.Writer.(*bodyLogWriter).body.String()), &object)
-	return err
-
-}
-
 func TestGetCurrentUser(t *testing.T) {
 
-	PopulateDatabase()
+	InitializeDatabase()
 	defer CleanupDatabase()
 
 	c := GetGinContextAsUser("GET", "/currentuser", nil)
@@ -171,7 +29,7 @@ func TestGetCurrentUser(t *testing.T) {
 }
 
 func TestGetCategory(t *testing.T) {
-	PopulateDatabase()
+	InitializeDatabase()
 	defer CleanupDatabase()
 
 	c := GetGinContextAsUser("GET", "/apiv1/categories", nil)
@@ -193,7 +51,7 @@ func TestGetCategory(t *testing.T) {
 }
 
 func TestAddCategory(t *testing.T) {
-	PopulateDatabase()
+	InitializeDatabase()
 	defer CleanupDatabase()
 
 	shoppingSitesCategory := Models.Category{
@@ -219,7 +77,7 @@ func TestAddCategory(t *testing.T) {
 }
 
 func TestAddCategoryChild(t *testing.T) {
-	PopulateDatabase()
+	InitializeDatabase()
 	defer CleanupDatabase()
 
 	golangCategory := Models.Category{
@@ -258,7 +116,7 @@ func TestAddCategoryChild(t *testing.T) {
 }
 
 func TestEditCategory(t *testing.T) {
-	PopulateDatabase()
+	InitializeDatabase()
 	defer CleanupDatabase()
 	testCategory := Models.Category{
 		Model: gorm.Model{
@@ -321,7 +179,7 @@ func TestEditCategory(t *testing.T) {
 }
 
 func TestDeleteCategory(t *testing.T) {
-	PopulateDatabase()
+	InitializeDatabase()
 	defer CleanupDatabase()
 	//case 1: wrong user, that has no access on category
 	c := GetGinContextAsAdministrator("DELETE", "/apiv1/categories", nil)
@@ -354,7 +212,7 @@ func userExistInList(username string, users []Models.User) bool {
 }
 
 func TestChangeUserPermissionCategoryWithExistingUsers(t *testing.T) {
-	PopulateDatabase()
+	InitializeDatabase()
 	defer CleanupDatabase()
 
 	usersWithAccess := []Models.User{
@@ -397,7 +255,7 @@ func TestChangeUserPermissionCategoryWithExistingUsers(t *testing.T) {
 }
 
 func TestChangeUserPermissionCategoryWithNonExistingUsers(t *testing.T) {
-	PopulateDatabase()
+	InitializeDatabase()
 	defer CleanupDatabase()
 
 	usersWithAccess := []Models.User{

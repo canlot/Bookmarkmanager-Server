@@ -6,23 +6,48 @@ import (
 	"os"
 )
 
-type AppConfiguration struct {
+type Configuration struct {
 	ListenPort     int
 	DatabaseConfig DatabaseConfig
-	DeploymentMode string
 }
 
 type DatabaseConfig struct {
-	DBProvider string
+	DBProvider DatabaseType
 	Host       string
 	Port       string
 	Username   string
 	Password   string
+	Database   string
 }
 
-var Configuration AppConfiguration
+type DatabaseType string
+
+const (
+	Sqlite DatabaseType = "Sqlite"
+	Mysql               = "Mysql"
+)
+
+type EnvironmentType int
+
+const (
+	Production EnvironmentType = iota
+	Test
+	Debug
+)
+
+var Environment EnvironmentType
+
+var AppConfiguration Configuration
 
 func init() {
+	Environment = Test
+}
+
+func GetConfig() {
+	if Environment == Test {
+		return
+	}
+
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	path, err := os.Getwd()
@@ -36,7 +61,7 @@ func init() {
 		log.Fatalf("fatal error config file: %w", err)
 	}
 
-	err = viper.Unmarshal(&Configuration)
+	err = viper.Unmarshal(&AppConfiguration)
 	if err != nil {
 		log.Fatalf("couln't parse config file: %w", err)
 	}
