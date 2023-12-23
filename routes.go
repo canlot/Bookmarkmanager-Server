@@ -51,8 +51,9 @@ func InitializeRoutes() {
 		userRoutes := apiRoutes.Group("/users")
 		{
 			userRoutes.GET("/", Handlers.GetAllUsers)
+			userRoutes.GET("/search/:search_text")
 			userRoutes.GET("/:id")
-			userRoutes.POST("/")
+			userRoutes.POST("/:password")
 			userRoutes.PUT("/:id")
 			userRoutes.DELETE("/:id")
 		}

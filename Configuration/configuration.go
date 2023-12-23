@@ -1,6 +1,7 @@
 package Configuration
 
 import (
+	"errors"
 	"github.com/spf13/viper"
 	"log"
 	"os"
@@ -14,7 +15,7 @@ type Configuration struct {
 type DatabaseConfig struct {
 	DBProvider DatabaseType
 	Host       string
-	Port       string
+	Port       int
 	Username   string
 	Password   string
 	Database   string
@@ -66,4 +67,15 @@ func GetConfig() {
 		log.Fatalf("couln't parse config file: %w", err)
 	}
 
+	err = checkConfig()
+	if err != nil {
+		log.Fatalf("config did not pass %w", err)
+	}
+
+}
+func checkConfig() error {
+	if AppConfiguration.ListenPort <= 0 || AppConfiguration.ListenPort >= 2^16 {
+		return errors.New("Listen port is not in the port range")
+	}
+	return nil
 }
