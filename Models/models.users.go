@@ -1,23 +1,11 @@
 package Models
 
-import (
-	"gorm.io/gorm"
-)
-
-func GetUser(username string, showPassword bool) (user User, success bool) {
-	ShowPassword = showPassword
+func GetUser(username string) (user User, success bool) {
 	if result := Database.Take(&user, "name = ?", username); result.Error == nil {
 		return user, true
 	} else {
 		return user, false
 	}
-}
-func (u *User) AfterFind(tx *gorm.DB) (err error) {
-	if ShowPassword == false {
-		u.Password = ""
-	}
-	ShowPassword = false
-	return nil
 }
 
 func GetAllUsers() (users []User, success bool) {
@@ -33,4 +21,7 @@ func UsersExist(users []User) bool {
 		}
 	}
 	return true
+}
+func AddUser(user User, password string) error {
+
 }

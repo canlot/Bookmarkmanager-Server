@@ -28,8 +28,7 @@ type Bookmark struct {
 type User struct {
 	gorm.Model
 	Name             string     `json:"name"`
-	Password         string     `json:"password"`
-	PasswordSalt     string     `json:"-"`
+	Password         string     `json:"-"`
 	Administrator    bool       `json:"administrator"`
 	CategoriesAccess []Category `json:"-" gorm:"many2many:user_categories;"`
 }
