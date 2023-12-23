@@ -16,7 +16,7 @@ import (
 var router *gin.Engine
 
 func main() {
-	Configuration.Environment = Configuration.Production
+	Configuration.Environment = Configuration.Test
 	Configuration.GetConfig()
 	Models.DatabaseConfig()
 	setUpTestData()
