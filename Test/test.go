@@ -1,6 +1,7 @@
 package Test
 
 import (
+	"Bookmarkmanager-Server/Helpers"
 	"Bookmarkmanager-Server/Models"
 	"bytes"
 	"encoding/json"
@@ -78,11 +79,22 @@ func InitializeDatabase() {
 	PopulateDatabase()
 }
 
+func CreateUsers() {
+	var user *Models.User
+	user = Users["Administrator"]
+	user.Password, _ = Helpers.CreateHashFromPassword(user.Password)
+	Models.Database.Create(user)
+	user = Users["User"]
+	user.Password, _ = Helpers.CreateHashFromPassword(user.Password)
+	Models.Database.Create(user)
+	user = Users["Jakob"]
+	user.Password, _ = Helpers.CreateHashFromPassword(user.Password)
+	Models.Database.Create(user)
+}
+
 func PopulateDatabase() {
 
-	Models.Database.Create(Users["Administrator"])
-	Models.Database.Create(Users["User"])
-	Models.Database.Create(Users["Jakob"])
+	CreateUsers()
 
 	Models.Database.Create(Categories["IT"])
 	Models.Database.Create(Categories["Books"])

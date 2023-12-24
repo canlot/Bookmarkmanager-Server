@@ -12,7 +12,7 @@ func Authenticate(c *gin.Context) {
 	if username, password, ok := c.Request.BasicAuth(); ok == true {
 		if user, success := Models.GetUser(username); success == true {
 			if user.Name == username {
-				if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+				if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err == nil {
 					authorized = true
 					c.Set("UserID", user.ID)
 				} else {
