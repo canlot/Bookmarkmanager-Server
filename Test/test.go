@@ -13,12 +13,14 @@ import (
 var Users = map[string]*Models.User{
 	"Administrator": &Models.User{
 		Model:         gorm.Model{ID: 1},
+		Email:         "admin@test.intern",
 		Name:          "Administrator",
 		Password:      "admin",
 		Administrator: true,
 	},
 	"User": &Models.User{
 		Model:            gorm.Model{ID: 2},
+		Email:            "user@test.intern",
 		Name:             "User",
 		Password:         "user",
 		Administrator:    false,
@@ -26,6 +28,7 @@ var Users = map[string]*Models.User{
 	},
 	"Jakob": &Models.User{
 		Model:            gorm.Model{ID: 3},
+		Email:            "jakob@test.intern",
 		Name:             "Jakob",
 		Password:         "test",
 		Administrator:    false,
@@ -136,7 +139,7 @@ func GetGinContext(username string, password string, method string, route string
 }
 
 func GetGinContextAsAdministrator(method string, route string, body interface{}) *gin.Context {
-	username := "Administrator"
+	username := "admin@test.intern"
 	password := "admin"
 
 	c := GetGinContext(username, password, method, route, body)
@@ -146,7 +149,7 @@ func GetGinContextAsAdministrator(method string, route string, body interface{})
 }
 
 func GetGinContextAsUser(method string, route string, body interface{}) *gin.Context {
-	username := "User"
+	username := "user@test.intern"
 	password := "user"
 
 	c := GetGinContext(username, password, method, route, body)

@@ -6,7 +6,7 @@ import (
 )
 
 func GetUser(username string) (user User, success bool) {
-	if result := Database.Take(&user, "name = ?", username); result.Error == nil {
+	if result := Database.Take(&user, "email = ?", username); result.Error == nil {
 		return user, true
 	} else {
 		return user, false
@@ -36,6 +36,10 @@ func AddUser(creatorId uint, user User, password string) (User, error) {
 	if owner.Administrator != true {
 		return user, errors.New("User is not administrator")
 	}
+	var similarUser User
+	if db := Database.Where("email = ?", user.Email).First(&similarUser); db.Error == nil {
+		return User{}, errors.New("User with same email exists")
+	}
 	var hashedPassword string
 	hashedPassword, err = Helpers.CreateHashFromPassword(password)
 	if err != nil {
@@ -46,4 +50,12 @@ func AddUser(creatorId uint, user User, password string) (User, error) {
 		return user, nil
 	}
 	return user, nil
+}
+func SearchUsers(searchString string) ([]User, error) {
+	searchString = "%" + searchString + "%"
+	var users []User
+	if db := Database.Where("email like ?", searchString).Or("name like ?", searchString).Find(&users); db.Error != nil {
+		return nil, db.Error
+	}
+	return users, nil
 }

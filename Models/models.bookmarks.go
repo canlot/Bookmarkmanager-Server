@@ -62,7 +62,7 @@ func SearchBookmarks(UserId uint, searchText string) ([]Bookmark, error) {
 	}
 	return bookmarks, nil
 }
-func AddBookmark(userId uint, categoryId uint, bookmark Bookmark) (bookmarkret Bookmark, success bool) {
+func AddBookmark(userId uint, categoryId uint, bookmark Bookmark) (Bookmark, bool) {
 	var category Category
 
 	if result := Database.Take(&category, categoryId); result.Error != nil {
@@ -77,7 +77,7 @@ func AddBookmark(userId uint, categoryId uint, bookmark Bookmark) (bookmarkret B
 	}
 	return bookmark, true
 }
-func EditBookmark(userId uint, categoryId uint, bookmarkId uint, bookmark Bookmark) error {
+func EditBookmark(userId uint, categoryId uint, bookmark Bookmark) error {
 	var category Category
 
 	if result := Database.Take(&category, categoryId); result.Error != nil {

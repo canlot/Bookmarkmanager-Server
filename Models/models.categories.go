@@ -41,28 +41,39 @@ func AddCategory(UserId uint, category Category) (Category, error) {
 	if category.OwnerID == 0 || category.OwnerID != UserId {
 		category.OwnerID = UserId
 	}
-	if result := Database.First(&user, UserId); result.Error == nil {
-		if category.ParentID == 0 {
-			if result := Database.Create(&category); result.Error == nil {
-				if result := Database.Model(&category).Association("UsersAccess").Append(&user); result == nil {
-					return category, nil
-				}
-			}
-		} else {
-			var parentCategory Category
-			if result := Database.Take(&parentCategory, category.ParentID); result.Error == nil {
-				if parentCategory.OwnerID == category.OwnerID {
-					if result := Database.Create(&category); result.Error == nil {
-						if result := Database.Model(&category).Association("UsersAccess").Append(&user); result == nil {
-							return category, nil
-						}
-					}
-				}
-			}
-		}
-
+	if result := Database.First(&user, UserId); result.Error != nil {
+		return category, result.Error
 	}
-	return category, errors.New("Error occured")
+
+	if category.ParentID == 0 {
+		if result := Database.Create(&category); result.Error != nil {
+			return category, result.Error
+		}
+		if err := Database.Model(&category).Association("UsersAccess").Append(&user); err != nil {
+			return category, err
+		}
+		return category, nil
+	} else {
+		var parentCategory Category
+		if result := Database.Take(&parentCategory, category.ParentID); result.Error != nil {
+			return category, result.Error
+		}
+		if parentCategory.OwnerID != category.OwnerID {
+			return category, errors.New("Category owner is not the same as parent category owner")
+		}
+		category.Shared = parentCategory.Shared
+		if result := Database.Create(&category); result.Error != nil {
+			return category, result.Error
+		}
+		var parentCategoryUsers []User
+		if err := Database.Model(&parentCategory).Association("UsersAccess").Find(&parentCategoryUsers); err != nil {
+			return category, err
+		}
+		if err := Database.Model(&category).Association("UsersAccess").Append(&parentCategoryUsers); err != nil {
+			return category, err
+		}
+		return category, nil
+	}
 }
 
 func EditCategory(userId uint, category Category) (Category, error) {

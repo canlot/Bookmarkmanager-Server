@@ -81,7 +81,7 @@ func EditBookmarkWithBookmarkId(c *gin.Context) {
 		c.JSON(400, errors.New("Different ids"))
 	}
 
-	err := Models.EditBookmark(Helpers.GetUserIdAsUint(c), categoryid, bookmarkid, bookmark)
+	err := Models.EditBookmark(Helpers.GetUserIdAsUint(c), categoryid, bookmark)
 
 	if err != nil {
 		c.JSON(400, err)

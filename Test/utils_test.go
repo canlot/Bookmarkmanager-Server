@@ -115,6 +115,32 @@ func TestAddCategoryChild(t *testing.T) {
 
 }
 
+func TestAddCategoryChildShared(t *testing.T) {
+	InitializeDatabase()
+	defer CleanupDatabase()
+	administrationBooks := Models.Category{
+		Model:    gorm.Model{ID: 5},
+		ParentID: 2,
+		Name:     "Administration",
+	}
+	c := GetGinContextAsAdministrator("POST", "/apiv1/categories", &administrationBooks)
+	Handlers.AddCategory(c)
+
+	assert.Equal(t, 200, c.Writer.Status())
+
+	var insertedCategory Models.Category
+	Models.Database.Take(&insertedCategory, administrationBooks.ID)
+
+	assert.Equal(t, insertedCategory.Name, administrationBooks.Name)
+	var users []Models.User
+
+	Models.Database.Model(&insertedCategory).Association("UsersAccess").Find(&users)
+
+	assert.Equal(t, true, userExistInList("Administrator", users))
+	assert.Equal(t, true, userExistInList("User", users))
+	assert.Equal(t, true, insertedCategory.Shared)
+}
+
 func TestEditCategory(t *testing.T) {
 	InitializeDatabase()
 	defer CleanupDatabase()

@@ -39,9 +39,7 @@ func InitializeRoutes() {
 
 		bookmarkRoutes := apiRoutes.Group("/bookmarks")
 		{
-			bookmarkRoutes.GET("/")
 			bookmarkRoutes.GET("/:id")
-			bookmarkRoutes.POST("/:id")
 			bookmarkRoutes.PUT("/:id")
 			bookmarkRoutes.DELETE("/:id")
 
@@ -51,7 +49,7 @@ func InitializeRoutes() {
 		userRoutes := apiRoutes.Group("/users")
 		{
 			userRoutes.GET("/", Handlers.GetAllUsers)
-			userRoutes.GET("/search/:search_text")
+			userRoutes.GET("/search/:search_text", Handlers.SearchUsers)
 			userRoutes.GET("/:id")
 			userRoutes.POST("/:password", Handlers.AddUser)
 			userRoutes.PUT("/:id")

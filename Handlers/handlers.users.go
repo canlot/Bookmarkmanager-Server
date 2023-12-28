@@ -3,6 +3,7 @@ package Handlers
 import (
 	"Bookmarkmanager-Server/Helpers"
 	"Bookmarkmanager-Server/Models"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -36,4 +37,16 @@ func AddUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, user)
+}
+func SearchUsers(c *gin.Context) {
+	seachString := c.Param("search_text")
+	if len(seachString) < 3 {
+		c.JSON(400, errors.New("search text was too short"))
+	}
+	var err error
+	var users []Models.User
+	if users, err = Models.SearchUsers(seachString); err != nil {
+		c.JSON(400, err)
+	}
+	c.JSON(200, users)
 }
