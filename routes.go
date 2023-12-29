@@ -52,8 +52,8 @@ func InitializeRoutes() {
 			userRoutes.GET("/search/:search_text", Handlers.SearchUsers)
 			userRoutes.GET("/:id")
 			userRoutes.POST("/:password", Handlers.AddUser)
-			userRoutes.PUT("/:id")
-			userRoutes.PUT("/:id/:password")
+			userRoutes.PUT("/:id", Handlers.EditUser)
+			userRoutes.PUT("/:id/:password", Handlers.EditUser)
 			userRoutes.DELETE("/:id")
 		}
 	}
