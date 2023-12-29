@@ -165,7 +165,8 @@ func TestEditCategory(t *testing.T) {
 	Models.Database.Take(&category, testCategory.ID)
 
 	assert.Equal(t, category.Name, testCategory.Name)
-	assert.Equal(t, category.OwnerID, Users["Administrator"].ID) // Should be set to "Users" "Id" because "User" created it
+	assert.Equal(t, category.OwnerID, Users["Administrator"].ID)
+	assert.Equal(t, category.Description, "Best Books")
 
 	//case 1: user is not the owner of the category
 

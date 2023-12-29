@@ -34,11 +34,11 @@ func AddUser(creatorId uint, user User, password string) (User, error) {
 		return user, db.Error
 	}
 	if owner.Administrator != true {
-		return user, errors.New("User is not administrator")
+		return user, errors.New("user is not administrator")
 	}
 	var similarUser User
 	if db := Database.Where("email = ?", user.Email).First(&similarUser); db.Error == nil {
-		return User{}, errors.New("User with same email exists")
+		return User{}, errors.New("user with same email exists")
 	}
 	var hashedPassword string
 	hashedPassword, err = Helpers.CreateHashFromPassword(password)
@@ -47,9 +47,31 @@ func AddUser(creatorId uint, user User, password string) (User, error) {
 	}
 	user.Password = hashedPassword
 	if db := Database.Create(&user); db.Error != nil {
-		return user, nil
+		return user, db.Error
 	}
 	return user, nil
+}
+func EditUser(editorId uint, user User, password string) error {
+	var err error
+	var editor User
+	if db := Database.Take(&editor, editorId); db.Error != nil {
+		return db.Error
+	}
+	if editor.Administrator != true {
+		return errors.New("user is not administrator")
+	}
+	if password != "" {
+		var hashedPassword string
+		hashedPassword, err = Helpers.CreateHashFromPassword(password)
+		if err != nil {
+			return err
+		}
+		user.Password = hashedPassword
+	}
+	if db := Database.Model(&user).Updates(&user); db.Error != nil {
+		return db.Error
+	}
+	return nil
 }
 func SearchUsers(searchString string) ([]User, error) {
 	searchString = "%" + searchString + "%"

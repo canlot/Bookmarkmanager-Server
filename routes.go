@@ -53,6 +53,7 @@ func InitializeRoutes() {
 			userRoutes.GET("/:id")
 			userRoutes.POST("/:password", Handlers.AddUser)
 			userRoutes.PUT("/:id")
+			userRoutes.PUT("/:id/:password")
 			userRoutes.DELETE("/:id")
 		}
 	}

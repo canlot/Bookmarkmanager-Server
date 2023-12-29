@@ -87,7 +87,9 @@ func EditCategory(userId uint, category Category) (Category, error) {
 	if category.ParentID != curCategory.ParentID {
 		return category, errors.New("ParentId cannot be changed")
 	}
-	Database.Save(&category)
+	if db := Database.Model(&category).Updates(&category); db.Error != nil {
+		return category, db.Error
+	}
 	return category, nil
 }
 

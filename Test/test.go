@@ -45,11 +45,12 @@ var Categories = map[string]*Models.Category{
 		OwnerID:  2,
 	},
 	"Books": &Models.Category{
-		Model:    gorm.Model{ID: 2},
-		ParentID: 0,
-		Name:     "Books",
-		Shared:   true,
-		OwnerID:  1,
+		Model:       gorm.Model{ID: 2},
+		ParentID:    0,
+		Name:        "Books",
+		Description: "Best Books",
+		Shared:      true,
+		OwnerID:     1,
 	},
 	"Programming": &Models.Category{
 		Model:    gorm.Model{ID: 3},
