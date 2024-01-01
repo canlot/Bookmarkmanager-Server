@@ -20,7 +20,7 @@ func main() {
 	Configuration.GetConfig()
 	Models.DatabaseConfig()
 	setUpTestData()
-	gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.DebugMode)
 
 	router = gin.Default()
 	InitializeRoutes()

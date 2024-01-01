@@ -55,6 +55,7 @@ func AddCategory(UserId uint, category Category) (Category, error) {
 			dbContext.Rollback()
 			return category, err
 		}
+		dbContext.Commit()
 		return category, nil
 	} else {
 		var parentCategory Category
