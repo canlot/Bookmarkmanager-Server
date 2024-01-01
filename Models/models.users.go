@@ -3,6 +3,7 @@ package Models
 import (
 	"Bookmarkmanager-Server/Helpers"
 	"errors"
+	"gorm.io/gorm"
 )
 
 func GetUser(username string) (user User, success bool) {
@@ -19,9 +20,9 @@ func GetAllUsers() (users []User, success bool) {
 	}
 	return users, false
 }
-func UsersExist(users []User) bool {
+func UsersExist(dbContext *gorm.DB, users []User) bool {
 	for i := range users {
-		if result := Database.Take(&(users[i])); result.Error != nil {
+		if result := dbContext.Take(&(users[i])); result.Error != nil {
 			return false
 		}
 	}

@@ -1,13 +1,15 @@
 package Models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 func (category Category) RemoveUsersFromCategoryInherit(dbContext *gorm.DB, users *[]User) (success bool) {
 	if !category.RemoveUsersFromCategory(dbContext, users) {
 		return true
 	}
 	var childCategories []Category
-	if result := Database.Find(&childCategories, "parent_id = ?", category.ID); result.Error != nil {
+	if result := dbContext.Find(&childCategories, "parent_id = ?", category.ID); result.Error != nil {
 		return false
 	}
 	for i := range childCategories {
@@ -22,7 +24,7 @@ func (category Category) AddUsersToCategoryInherit(dbContext *gorm.DB, users *[]
 		return false
 	}
 	var childCategories []Category
-	if result := Database.Find(&childCategories, "parent_id = ?", category.ID); result.Error != nil {
+	if result := dbContext.Find(&childCategories, "parent_id = ?", category.ID); result.Error != nil {
 		return false
 	}
 	for i := range childCategories {
@@ -34,7 +36,7 @@ func (category Category) AddUsersToCategoryInherit(dbContext *gorm.DB, users *[]
 }
 func (category Category) RemoveUsersFromCategory(dbContext *gorm.DB, users *[]User) (success bool) {
 	var uniqueUsers []User
-	if uniqueUsers, success = category.GetOnlyExistingUsersInCurrentCategory(users); success != true {
+	if uniqueUsers, success = category.GetOnlyExistingUsersInCurrentCategory(dbContext, users); success != true {
 		return false
 	}
 	if uniqueUsers, success = category.GetUsersWithoutOwner(&uniqueUsers); success != true {
@@ -49,7 +51,7 @@ func (category Category) RemoveUsersFromCategory(dbContext *gorm.DB, users *[]Us
 	if result := dbContext.Model(&category).Association("UsersAccess").Delete(&uniqueUsers); result != nil {
 		return false
 	}
-	if leftusers, success := category.GetUsersForCategory(); success != true {
+	if leftusers, success := category.GetUsersForCategory(dbContext); success != true {
 		return false
 	} else {
 		if len(leftusers) == 1 {
@@ -62,7 +64,7 @@ func (category Category) RemoveUsersFromCategory(dbContext *gorm.DB, users *[]Us
 }
 func (category Category) AddUsersToCategory(dbContext *gorm.DB, users *[]User) (success bool) {
 	var uniqueUsers []User
-	if uniqueUsers, success = category.GetOnlyNonExistingUsersInCurrentCategory(users); success != true {
+	if uniqueUsers, success = category.GetOnlyNonExistingUsersInCurrentCategory(dbContext, users); success != true {
 		return false
 	}
 	if !category.AreUsersUnique(&uniqueUsers) {
@@ -104,8 +106,8 @@ func (category Category) GetUsersWithoutOwner(users *[]User) (newusers []User, s
 	}
 	return newusers, true
 }
-func (category Category) GetOnlyExistingUsersInCurrentCategory(users *[]User) (differentUsers []User, success bool) {
-	if originalUsers, success := category.GetUsersForCategory(); success == true {
+func (category Category) GetOnlyExistingUsersInCurrentCategory(dbContext *gorm.DB, users *[]User) (differentUsers []User, success bool) {
+	if originalUsers, success := category.GetUsersForCategory(dbContext); success == true {
 		for i := range *users {
 			var exists = false
 			for j := range originalUsers {
@@ -122,8 +124,8 @@ func (category Category) GetOnlyExistingUsersInCurrentCategory(users *[]User) (d
 	}
 	return differentUsers, true
 }
-func (category Category) GetOnlyNonExistingUsersInCurrentCategory(users *[]User) (differentUsers []User, success bool) {
-	if originalUsers, success := category.GetUsersForCategory(); success == true {
+func (category Category) GetOnlyNonExistingUsersInCurrentCategory(dbContext *gorm.DB, users *[]User) (differentUsers []User, success bool) {
+	if originalUsers, success := category.GetUsersForCategory(dbContext); success == true {
 		for i := 0; i < len(*users); i++ {
 			var exists = false
 			for j := 0; j < len(originalUsers); j++ {
@@ -140,15 +142,14 @@ func (category Category) GetOnlyNonExistingUsersInCurrentCategory(users *[]User)
 	}
 	return differentUsers, true
 }
-func (category Category) GetUsersForCategory() (users []User, success bool) {
-	if result := Database.Model(&category).Association("UsersAccess").Find(&users); result != nil {
+func (category Category) GetUsersForCategory(dbContext *gorm.DB) (users []User, success bool) {
+	if result := dbContext.Model(&category).Association("UsersAccess").Find(&users); result != nil {
 		return users, false
 	}
 	return users, true
 }
 
 func (category Category) DeleteAll(dbContext *gorm.DB) bool {
-
 	var categories []Category
 	if result := Database.Find(&categories, "parent_id = ?", category.ID); result.Error != nil {
 		return false

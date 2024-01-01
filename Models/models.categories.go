@@ -166,7 +166,7 @@ func getUsersThatAreOnlyOnLeftSide(usersLeft *[]User, usersRight *[]User) []User
 
 func AddUsersForCategory(dbContext *gorm.DB, userID uint, categoryID uint, users *[]User) error {
 	category := Category{}
-	if result := Database.Find(&category, "id=?", categoryID); result.Error != nil {
+	if result := dbContext.Find(&category, "id=?", categoryID); result.Error != nil {
 		return result.Error
 	}
 	if category.OwnerID != userID {
@@ -175,18 +175,17 @@ func AddUsersForCategory(dbContext *gorm.DB, userID uint, categoryID uint, users
 	if category.ParentID != 0 { //only to level categories can be shared
 		return errors.New("Cannot grant permission because it is not a top level category")
 	}
-	if !UsersExist(*users) {
+	if !UsersExist(dbContext, *users) {
 		return errors.New("Not all users exist in database")
 	}
 	if success := category.AddUsersToCategoryInherit(dbContext, users); success != true {
 		return errors.New("Could not add users to category and child categories")
 	}
-
 	return nil
 }
 func RemoveUsersFromCategory(dbContext *gorm.DB, userID uint, categoryID uint, users *[]User) error {
 	category := Category{}
-	if result := Database.Find(&category, "id=?", categoryID); result.Error != nil {
+	if result := dbContext.Find(&category, "id=?", categoryID); result.Error != nil {
 		return errors.New("could not find category")
 	}
 	if category.OwnerID != userID {
@@ -195,7 +194,7 @@ func RemoveUsersFromCategory(dbContext *gorm.DB, userID uint, categoryID uint, u
 	if category.ParentID != 0 { //only to level categories can be shared
 		return errors.New("Cannot remove permission because it is not a top level category")
 	}
-	if !UsersExist(*users) {
+	if !UsersExist(dbContext, *users) {
 		return errors.New("Not all users exist in database")
 	}
 	if success := category.RemoveUsersFromCategoryInherit(dbContext, users); success != true {
