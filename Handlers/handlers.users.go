@@ -67,6 +67,20 @@ func EditUser(c *gin.Context) {
 	c.Status(200)
 
 }
+func DeleteUser(c *gin.Context) {
+	userIdString := c.Param("id")
+	var userId uint
+	var success bool
+	if userId, success = Helpers.ConvertFromStringToUint(&userIdString); success != true {
+		c.JSON(400, errors.New("couldn't convert user id"))
+		return
+	}
+	if err := Models.DeleteUser(Helpers.GetUserIdAsUint(c), userId); err != nil {
+		c.JSON(400, err)
+	}
+	c.Status(200)
+
+}
 func SearchUsers(c *gin.Context) {
 	searchString := c.Param("search_text")
 	if len(searchString) < 3 {

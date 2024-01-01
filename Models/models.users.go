@@ -68,9 +68,56 @@ func EditUser(editorId uint, user User, password string) error {
 		}
 		user.Password = hashedPassword
 	}
-	if db := Database.Model(&user).Updates(&user); db.Error != nil {
+	tx := Database.Begin()
+	if db := tx.Model(&user).Updates(&user); db.Error != nil {
+		tx.Rollback()
 		return db.Error
 	}
+	tx.Commit()
+	return nil
+}
+func DeleteUser(administratorId uint, deletingUserId uint) error {
+	var administrator User
+	var deletingUser User
+
+	if db := Database.Take(&administrator, administratorId); db.Error != nil {
+		return db.Error
+	}
+
+	if administrator.Administrator != true {
+		return errors.New("user is not administrator")
+	}
+	if db := Database.Take(&deletingUser, deletingUserId); db.Error != nil {
+		return db.Error
+	}
+	tx := Database.Begin()
+	for {
+		var categories []Category
+		if db := Database.Limit(10).Where("ownerid = ?", deletingUser.ID).Find(&categories); db.Error != nil {
+			if db.RowsAffected == 0 {
+				break
+			}
+		}
+		for i := range categories {
+			if db := tx.Where("categoryid = ?", categories[i].ID).Delete(&Bookmark{}); db.Error != nil {
+				tx.Rollback()
+				return db.Error
+			}
+			if err := tx.Model(&categories[i]).Association("UsersAccess").Clear(); err != nil {
+				tx.Rollback()
+				return err
+			}
+			if db := tx.Delete(&categories[i]); db.Error != nil {
+				tx.Rollback()
+				return db.Error
+			}
+		}
+	}
+	if db := tx.Delete(&deletingUser); db.Error != nil {
+		tx.Rollback()
+		return db.Error
+	}
+	tx.Commit()
 	return nil
 }
 func SearchUsers(searchString string) ([]User, error) {

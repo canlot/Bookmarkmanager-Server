@@ -54,7 +54,7 @@ func InitializeRoutes() {
 			userRoutes.POST("/:password", Handlers.AddUser)
 			userRoutes.PUT("/:id", Handlers.EditUser)
 			userRoutes.PUT("/:id/:password", Handlers.EditUser)
-			userRoutes.DELETE("/:id")
+			userRoutes.DELETE("/:id", Handlers.DeleteUser)
 		}
 	}
 }
