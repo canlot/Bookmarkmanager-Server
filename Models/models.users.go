@@ -46,9 +46,12 @@ func AddUser(creatorId uint, user User, password string) (User, error) {
 		return user, err
 	}
 	user.Password = hashedPassword
-	if db := Database.Create(&user); db.Error != nil {
+	dbContext := Database.Begin()
+	if db := dbContext.Create(&user); db.Error != nil {
+		dbContext.Rollback()
 		return user, db.Error
 	}
+	dbContext.Commit()
 	return user, nil
 }
 func EditUser(editorId uint, user User, password string) error {
@@ -68,12 +71,12 @@ func EditUser(editorId uint, user User, password string) error {
 		}
 		user.Password = hashedPassword
 	}
-	tx := Database.Begin()
-	if db := tx.Model(&user).Updates(&user); db.Error != nil {
-		tx.Rollback()
+	dbContext := Database.Begin()
+	if db := dbContext.Model(&user).Updates(&user); db.Error != nil {
+		dbContext.Rollback()
 		return db.Error
 	}
-	tx.Commit()
+	dbContext.Commit()
 	return nil
 }
 func DeleteUser(administratorId uint, deletingUserId uint) error {
@@ -90,7 +93,7 @@ func DeleteUser(administratorId uint, deletingUserId uint) error {
 	if db := Database.Take(&deletingUser, deletingUserId); db.Error != nil {
 		return db.Error
 	}
-	tx := Database.Begin()
+	dbContext := Database.Begin()
 	for {
 		var categories []Category
 		if db := Database.Limit(10).Where("ownerid = ?", deletingUser.ID).Find(&categories); db.Error != nil {
@@ -99,25 +102,25 @@ func DeleteUser(administratorId uint, deletingUserId uint) error {
 			}
 		}
 		for i := range categories {
-			if db := tx.Where("categoryid = ?", categories[i].ID).Delete(&Bookmark{}); db.Error != nil {
-				tx.Rollback()
+			if db := dbContext.Where("categoryid = ?", categories[i].ID).Delete(&Bookmark{}); db.Error != nil {
+				dbContext.Rollback()
 				return db.Error
 			}
-			if err := tx.Model(&categories[i]).Association("UsersAccess").Clear(); err != nil {
-				tx.Rollback()
+			if err := dbContext.Model(&categories[i]).Association("UsersAccess").Clear(); err != nil {
+				dbContext.Rollback()
 				return err
 			}
-			if db := tx.Delete(&categories[i]); db.Error != nil {
-				tx.Rollback()
+			if db := dbContext.Delete(&categories[i]); db.Error != nil {
+				dbContext.Rollback()
 				return db.Error
 			}
 		}
 	}
-	if db := tx.Delete(&deletingUser); db.Error != nil {
-		tx.Rollback()
+	if db := dbContext.Delete(&deletingUser); db.Error != nil {
+		dbContext.Rollback()
 		return db.Error
 	}
-	tx.Commit()
+	dbContext.Commit()
 	return nil
 }
 func SearchUsers(searchString string) ([]User, error) {

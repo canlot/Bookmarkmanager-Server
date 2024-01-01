@@ -1,7 +1,9 @@
 package Models
 
-func (category Category) RemoveUsersFromCategoryInherit(users *[]User) (success bool) {
-	if !category.RemoveUsersFromCategory(users) {
+import "gorm.io/gorm"
+
+func (category Category) RemoveUsersFromCategoryInherit(dbContext *gorm.DB, users *[]User) (success bool) {
+	if !category.RemoveUsersFromCategory(dbContext, users) {
 		return true
 	}
 	var childCategories []Category
@@ -9,14 +11,14 @@ func (category Category) RemoveUsersFromCategoryInherit(users *[]User) (success 
 		return false
 	}
 	for i := range childCategories {
-		if childCategories[i].RemoveUsersFromCategoryInherit(users) != true {
+		if childCategories[i].RemoveUsersFromCategoryInherit(dbContext, users) != true {
 			return false
 		}
 	}
 	return true
 }
-func (category Category) AddUsersToCategoryInherit(users *[]User) (success bool) {
-	if !category.AddUsersToCategory(users) {
+func (category Category) AddUsersToCategoryInherit(dbContext *gorm.DB, users *[]User) (success bool) {
+	if !category.AddUsersToCategory(dbContext, users) {
 		return false
 	}
 	var childCategories []Category
@@ -24,13 +26,13 @@ func (category Category) AddUsersToCategoryInherit(users *[]User) (success bool)
 		return false
 	}
 	for i := range childCategories {
-		if childCategories[i].AddUsersToCategoryInherit(users) != true {
+		if childCategories[i].AddUsersToCategoryInherit(dbContext, users) != true {
 			return false
 		}
 	}
 	return true
 }
-func (category Category) RemoveUsersFromCategory(users *[]User) (success bool) {
+func (category Category) RemoveUsersFromCategory(dbContext *gorm.DB, users *[]User) (success bool) {
 	var uniqueUsers []User
 	if uniqueUsers, success = category.GetOnlyExistingUsersInCurrentCategory(users); success != true {
 		return false
@@ -44,21 +46,21 @@ func (category Category) RemoveUsersFromCategory(users *[]User) (success bool) {
 	if len(uniqueUsers) == 0 {
 		return false
 	}
-	if result := Database.Model(&category).Association("UsersAccess").Delete(&uniqueUsers); result != nil {
+	if result := dbContext.Model(&category).Association("UsersAccess").Delete(&uniqueUsers); result != nil {
 		return false
 	}
 	if leftusers, success := category.GetUsersForCategory(); success != true {
 		return false
 	} else {
 		if len(leftusers) == 1 {
-			if result := Database.Model(&category).Update("shared", "0"); result.Error != nil {
+			if result := dbContext.Model(&category).Update("shared", "0"); result.Error != nil {
 				return false
 			}
 		}
 	}
 	return true
 }
-func (category Category) AddUsersToCategory(users *[]User) (success bool) {
+func (category Category) AddUsersToCategory(dbContext *gorm.DB, users *[]User) (success bool) {
 	var uniqueUsers []User
 	if uniqueUsers, success = category.GetOnlyNonExistingUsersInCurrentCategory(users); success != true {
 		return false
@@ -72,10 +74,10 @@ func (category Category) AddUsersToCategory(users *[]User) (success bool) {
 	if len(uniqueUsers) == 0 {
 		return false
 	}
-	if result := Database.Model(&category).Omit("UsersAccess").Association("UsersAccess").Append(&uniqueUsers); result != nil {
+	if result := dbContext.Model(&category).Omit("UsersAccess").Association("UsersAccess").Append(&uniqueUsers); result != nil {
 		return false
 	}
-	if result := Database.Model(&category).Update("shared", "1"); result.Error != nil {
+	if result := dbContext.Model(&category).Update("shared", "1"); result.Error != nil {
 		return false
 	}
 	return true
@@ -145,25 +147,24 @@ func (category Category) GetUsersForCategory() (users []User, success bool) {
 	return users, true
 }
 
-func (category Category) DeleteAll() bool {
+func (category Category) DeleteAll(dbContext *gorm.DB) bool {
 
 	var categories []Category
 	if result := Database.Find(&categories, "parent_id = ?", category.ID); result.Error != nil {
 		return false
 	}
 	for i := range categories {
-		if categories[i].DeleteAll() != true {
+		if categories[i].DeleteAll(dbContext) != true {
 			return false
 		}
 	}
-	if result := Database.Model(&category).Association("UsersAccess").Clear(); result != nil {
+	if result := dbContext.Model(&category).Association("UsersAccess").Clear(); result != nil {
 		return false
 	}
-	if result := Database.Delete(&Bookmark{}, "category_id = ?", category.ID); result.Error != nil {
+	if result := dbContext.Delete(&Bookmark{}, "category_id = ?", category.ID); result.Error != nil {
 		return false
 	}
-	if result := Database.Delete(&category); result.Error != nil {
-		//fmt.Println(result.Error)
+	if result := dbContext.Delete(&category); result.Error != nil {
 		return false
 	}
 	return true

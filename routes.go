@@ -29,10 +29,7 @@ func InitializeRoutes() {
 				categoryRoutesIDUsers := categoryRoutesID.Group("/permissions")
 				{
 					categoryRoutesIDUsers.GET("/", Handlers.GetUsersForCategory)
-					categoryRoutesIDUsers.POST("/", Handlers.AddUsersForCategory)
 					categoryRoutesIDUsers.PUT("/", Handlers.EditUsersForCategory)
-					categoryRoutesIDUsers.DELETE("/", Handlers.RemoveUsersFromCategory)
-					categoryRoutesIDUsers.DELETE("/:user_id")
 				}
 			}
 		}

@@ -72,9 +72,12 @@ func AddBookmark(userId uint, categoryId uint, bookmark Bookmark) (Bookmark, boo
 		return bookmark, false
 	}
 	bookmark.CategoryID = category.ID
-	if result := Database.Create(&bookmark); result.Error != nil {
+	dbContext := Database.Begin()
+	if result := dbContext.Create(&bookmark); result.Error != nil {
+		dbContext.Rollback()
 		return bookmark, false
 	}
+	dbContext.Commit()
 	return bookmark, true
 }
 func EditBookmark(userId uint, categoryId uint, bookmark Bookmark) error {
@@ -84,12 +87,14 @@ func EditBookmark(userId uint, categoryId uint, bookmark Bookmark) error {
 		return result.Error
 	}
 	if category.OwnerID != userId {
-		return errors.New("Owner of bookmark not the same as loged on user")
+		return errors.New("owner of bookmark not the same as logged on user")
 	}
-
-	if result := Database.Save(&bookmark); result.Error != nil {
+	dbContext := Database.Begin()
+	if result := dbContext.Save(&bookmark); result.Error != nil {
+		dbContext.Rollback()
 		return result.Error
 	}
+	dbContext.Commit()
 	return nil
 }
 func DeleteBookmark(userId uint, categoryId uint, bookmarkId uint) error {
@@ -101,9 +106,11 @@ func DeleteBookmark(userId uint, categoryId uint, bookmarkId uint) error {
 	if category.OwnerID != userId {
 		return errors.New("Owner of bookmark not the same as loged on user")
 	}
-
-	if result := Database.Delete(&Bookmark{}, bookmarkId); result.Error != nil {
+	dbContext := Database.Begin()
+	if result := dbContext.Delete(&Bookmark{}, bookmarkId); result.Error != nil {
+		dbContext.Rollback()
 		return result.Error
 	}
+	dbContext.Commit()
 	return nil
 }

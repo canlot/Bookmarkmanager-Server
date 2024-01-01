@@ -3,6 +3,7 @@ package Models
 import (
 	"Bookmarkmanager-Server/Helpers"
 	"errors"
+	"gorm.io/gorm"
 )
 
 // get all categories for permitted user with parent_id
@@ -44,12 +45,14 @@ func AddCategory(UserId uint, category Category) (Category, error) {
 	if result := Database.First(&user, UserId); result.Error != nil {
 		return category, result.Error
 	}
-
+	dbContext := Database.Begin()
 	if category.ParentID == 0 {
-		if result := Database.Create(&category); result.Error != nil {
+		if result := dbContext.Create(&category); result.Error != nil {
+			dbContext.Rollback()
 			return category, result.Error
 		}
-		if err := Database.Model(&category).Association("UsersAccess").Append(&user); err != nil {
+		if err := dbContext.Model(&category).Association("UsersAccess").Append(&user); err != nil {
+			dbContext.Rollback()
 			return category, err
 		}
 		return category, nil
@@ -62,16 +65,20 @@ func AddCategory(UserId uint, category Category) (Category, error) {
 			return category, errors.New("Category owner is not the same as parent category owner")
 		}
 		category.Shared = parentCategory.Shared
-		if result := Database.Create(&category); result.Error != nil {
+		if result := dbContext.Create(&category); result.Error != nil {
+			dbContext.Rollback()
 			return category, result.Error
 		}
 		var parentCategoryUsers []User
-		if err := Database.Model(&parentCategory).Association("UsersAccess").Find(&parentCategoryUsers); err != nil {
+		if err := dbContext.Model(&parentCategory).Association("UsersAccess").Find(&parentCategoryUsers); err != nil {
+			dbContext.Rollback()
 			return category, err
 		}
-		if err := Database.Model(&category).Association("UsersAccess").Append(&parentCategoryUsers); err != nil {
+		if err := dbContext.Model(&category).Association("UsersAccess").Append(&parentCategoryUsers); err != nil {
+			dbContext.Rollback()
 			return category, err
 		}
+		dbContext.Commit()
 		return category, nil
 	}
 }
@@ -87,9 +94,12 @@ func EditCategory(userId uint, category Category) (Category, error) {
 	if category.ParentID != curCategory.ParentID {
 		return category, errors.New("ParentId cannot be changed")
 	}
-	if db := Database.Model(&category).Updates(&category); db.Error != nil {
+	dbContext := Database.Begin()
+	if db := dbContext.Model(&category).Updates(&category); db.Error != nil {
+		dbContext.Rollback()
 		return category, db.Error
 	}
+	dbContext.Commit()
 	return category, nil
 }
 
@@ -101,9 +111,12 @@ func DeleteCategory(categoryId uint, UserId uint) bool {
 	if category.OwnerID != UserId {
 		return false
 	}
-	if category.DeleteAll() != true {
+	dbContext := Database.Begin()
+	if category.DeleteAll(dbContext) != true {
+		dbContext.Rollback()
 		return false
 	}
+	dbContext.Commit()
 	return true
 }
 func EditUsersForCategory(userID uint, categoryID uint, users *[]User) error {
@@ -116,17 +129,20 @@ func EditUsersForCategory(userID uint, categoryID uint, users *[]User) error {
 
 	usersToAdd := getUsersThatAreOnlyOnLeftSide(users, &currentUsers)
 	usersToRemove := getUsersThatAreOnlyOnLeftSide(&currentUsers, users)
-
+	dbContext := Database.Begin()
 	if len(usersToAdd) != 0 {
-		if err := AddUsersForCategory(userID, categoryID, &usersToAdd); err != nil {
+		if err := AddUsersForCategory(dbContext, userID, categoryID, &usersToAdd); err != nil {
+			dbContext.Rollback()
 			return err
 		}
 	}
 	if len(usersToRemove) != 0 {
-		if err := RemoveUsersFromCategory(userID, categoryID, &usersToRemove); err != nil {
+		if err := RemoveUsersFromCategory(dbContext, userID, categoryID, &usersToRemove); err != nil {
+			dbContext.Rollback()
 			return err
 		}
 	}
+	dbContext.Commit()
 	return nil
 }
 
@@ -147,7 +163,7 @@ func getUsersThatAreOnlyOnLeftSide(usersLeft *[]User, usersRight *[]User) []User
 	return users
 }
 
-func AddUsersForCategory(userID uint, categoryID uint, users *[]User) error {
+func AddUsersForCategory(dbContext *gorm.DB, userID uint, categoryID uint, users *[]User) error {
 	category := Category{}
 	if result := Database.Find(&category, "id=?", categoryID); result.Error != nil {
 		return result.Error
@@ -161,13 +177,13 @@ func AddUsersForCategory(userID uint, categoryID uint, users *[]User) error {
 	if !UsersExist(*users) {
 		return errors.New("Not all users exist in database")
 	}
-	if success := category.AddUsersToCategoryInherit(users); success != true {
+	if success := category.AddUsersToCategoryInherit(dbContext, users); success != true {
 		return errors.New("Could not add users to category and child categories")
 	}
 
 	return nil
 }
-func RemoveUsersFromCategory(userID uint, categoryID uint, users *[]User) error {
+func RemoveUsersFromCategory(dbContext *gorm.DB, userID uint, categoryID uint, users *[]User) error {
 	category := Category{}
 	if result := Database.Find(&category, "id=?", categoryID); result.Error != nil {
 		return errors.New("could not find category")
@@ -181,7 +197,7 @@ func RemoveUsersFromCategory(userID uint, categoryID uint, users *[]User) error 
 	if !UsersExist(*users) {
 		return errors.New("Not all users exist in database")
 	}
-	if success := category.RemoveUsersFromCategoryInherit(users); success != true {
+	if success := category.RemoveUsersFromCategoryInherit(dbContext, users); success != true {
 		return errors.New("Could not remove permissions from categories inherit")
 	}
 	return nil
