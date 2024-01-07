@@ -18,15 +18,14 @@ func GetAllUsers(c *gin.Context) {
 	}
 }
 func GetCurrentUser(c *gin.Context) {
-	if username, _, ok := c.Request.BasicAuth(); ok == true {
-		if user, success := Models.GetUser(username); success == true {
-			c.JSON(200, user)
-			return
-		} else {
-			c.Status(400)
-			return
-		}
+	var user Models.User
+	var err error
+	if user, err = Models.GetUserWithId(Helpers.GetUserIdAsUint(c)); err != nil {
+		c.JSON(400, err)
+		return
 	}
+	c.JSON(200, user)
+	return
 }
 func AddUser(c *gin.Context) {
 	password := c.Param("password")

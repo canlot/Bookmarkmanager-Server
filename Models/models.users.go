@@ -13,6 +13,12 @@ func GetUser(username string) (user User, success bool) {
 		return user, false
 	}
 }
+func GetUserWithId(id uint) (user User, err error) {
+	if result := Database.Take(&user, id); result.Error != nil {
+		return user, result.Error
+	}
+	return user, nil
+}
 
 func GetAllUsers() (users []User, success bool) {
 	if result := Database.Find(&users); result.Error == nil {

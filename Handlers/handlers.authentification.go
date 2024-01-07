@@ -23,15 +23,6 @@ func Authenticate(c *gin.Context) {
 		c.Status(http.StatusNotAcceptable)
 		return
 	}
-	/*
-		if userId, success := tokenCache.Get(strings.Split(bearerToken, " ")[1]); success == true {
-			c.Set("UserID", userId.(uint))
-
-		} else {
-			c.Status(http.StatusUnauthorized)
-			return
-		}
-	*/
 
 	var userId interface{}
 	var success bool
@@ -40,7 +31,6 @@ func Authenticate(c *gin.Context) {
 		return
 	}
 	c.Set("UserID", userId.(uint))
-
 }
 
 func GetBearerToken(c *gin.Context) {
