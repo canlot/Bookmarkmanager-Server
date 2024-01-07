@@ -3,6 +3,8 @@ package main
 import "Bookmarkmanager-Server/Handlers"
 
 func InitializeRoutes() {
+	router.POST("/apiv1/login", Handlers.GetBearerToken)
+
 	apiRoutes := router.Group("/apiv1", Handlers.Authenticate)
 	{
 		apiRoutes.GET("/currentuser", Handlers.GetCurrentUser)
