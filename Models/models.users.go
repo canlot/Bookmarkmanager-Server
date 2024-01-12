@@ -100,6 +100,9 @@ func DeleteUser(administratorId uint, deletingUserId uint) error {
 	if db := Database.Take(&deletingUser, deletingUserId); db.Error != nil {
 		return db.Error
 	}
+	if administrator.ID == deletingUser.ID {
+		return errors.New("cannot delete himself")
+	}
 	dbContext := Database.Begin()
 	for {
 		var categories []Category
