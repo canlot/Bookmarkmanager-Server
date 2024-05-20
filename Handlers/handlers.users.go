@@ -28,14 +28,18 @@ func GetCurrentUser(c *gin.Context) {
 	return
 }
 func AddUser(c *gin.Context) {
-	password := c.Param("password")
+	passwordString := c.Param("password")
+	if len(passwordString) < 4 {
+		c.JSON(400, errors.New("password is too short"))
+		return
+	}
 	var err error
 	var user Models.User
 	if err = c.BindJSON(&user); err != nil {
 		c.JSON(400, err)
 		return
 	}
-	if user, err = Models.AddUser(Helpers.GetUserIdAsUint(c), user, password); err != nil {
+	if user, err = Models.AddUser(Helpers.GetUserIdAsUint(c), user, passwordString); err != nil {
 		c.JSON(400, err)
 		return
 	}
@@ -49,7 +53,7 @@ func EditUser(c *gin.Context) {
 		c.JSON(400, errors.New("couldn't convert user id"))
 		return
 	}
-	password := c.Param("password")
+
 	var user Models.User
 	if err := c.BindJSON(&user); err != nil {
 		c.JSON(400, errors.New("couldn't parse user object"))
@@ -59,12 +63,32 @@ func EditUser(c *gin.Context) {
 		c.JSON(400, errors.New("user ids not matching"))
 		return
 	}
-	if err := Models.EditUser(Helpers.GetUserIdAsUint(c), user, password); err != nil {
+	if err := Models.EditUser(Helpers.GetUserIdAsUint(c), user); err != nil {
 		c.JSON(400, err)
 		return
 	}
 	c.Status(200)
 
+}
+func SetPassword(c *gin.Context) {
+	userIdString := c.Param("id")
+	passwordString := c.Param("password")
+	var success bool
+
+	var userId uint
+	if len(passwordString) < 4 {
+		c.JSON(400, errors.New("password is too short"))
+		return
+	}
+	if userId, success = Helpers.ConvertFromStringToUint(&userIdString); success != true {
+		c.JSON(400, errors.New("couldn't convert user id"))
+		return
+	}
+	if err := Models.SetPasswordForUser(Helpers.GetUserIdAsUint(c), userId, passwordString); err != nil {
+		c.JSON(400, err)
+		return
+	}
+	c.Status(200)
 }
 func DeleteUser(c *gin.Context) {
 	userIdString := c.Param("id")

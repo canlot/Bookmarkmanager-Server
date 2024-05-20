@@ -26,6 +26,7 @@ func InitializeRoutes() {
 					categoryRoutesIDBookmarks.GET("/", Handlers.GetBookmarksWithCategoryId)
 					categoryRoutesIDBookmarks.POST("/", Handlers.AddBookmarkToCategory)
 					categoryRoutesIDBookmarks.PUT("/:bookmark_id", Handlers.EditBookmarkWithBookmarkId)
+					categoryRoutesIDBookmarks.PUT("/:bookmark_id/to/:category_destination_id", Handlers.MoveBookmarkWithBookmarkId)
 					categoryRoutesIDBookmarks.DELETE("/:bookmark_id", Handlers.DeleteBookmarkWithBookmarkId)
 				}
 				categoryRoutesIDUsers := categoryRoutesID.Group("/permissions")
@@ -52,7 +53,7 @@ func InitializeRoutes() {
 			userRoutes.GET("/:id")
 			userRoutes.POST("/:password", Handlers.AddUser)
 			userRoutes.PUT("/:id", Handlers.EditUser)
-			userRoutes.PUT("/:id/:password", Handlers.EditUser)
+			userRoutes.PUT("/:id/:password", Handlers.SetPassword)
 			userRoutes.DELETE("/:id", Handlers.DeleteUser)
 		}
 	}

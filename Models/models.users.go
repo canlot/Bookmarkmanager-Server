@@ -36,11 +36,11 @@ func UsersExist(dbContext *gorm.DB, users []User) bool {
 }
 func AddUser(creatorId uint, user User, password string) (User, error) {
 	var err error
-	var owner User
-	if db := Database.Take(&owner, creatorId); db.Error != nil {
+	var creator User
+	if db := Database.Take(&creator, creatorId); db.Error != nil {
 		return user, db.Error
 	}
-	if owner.Administrator != true {
+	if creator.Administrator != true {
 		return user, errors.New("user is not administrator")
 	}
 	var similarUser User
@@ -56,13 +56,14 @@ func AddUser(creatorId uint, user User, password string) (User, error) {
 	dbContext := Database.Begin()
 	if db := dbContext.Create(&user); db.Error != nil {
 		dbContext.Rollback()
+		user.Password = ""
 		return user, db.Error
 	}
 	dbContext.Commit()
+	user.Password = ""
 	return user, nil
 }
-func EditUser(editorId uint, user User, password string) error {
-	var err error
+func EditUser(editorId uint, user User) error {
 	var editor User
 	if db := Database.Take(&editor, editorId); db.Error != nil {
 		return db.Error
@@ -70,16 +71,39 @@ func EditUser(editorId uint, user User, password string) error {
 	if editor.Administrator != true {
 		return errors.New("user is not administrator")
 	}
+	dbContext := Database.Begin()
+	if db := dbContext.Model(&user).Updates(user); db.Error != nil {
+		dbContext.Rollback()
+		return db.Error
+	}
+	if db := dbContext.Model(&user).Update("administrator", user.Administrator); db.Error != nil {
+		dbContext.Rollback()
+		return db.Error
+	}
+	dbContext.Commit()
+	return nil
+}
+func SetPasswordForUser(editorId uint, userId uint, password string) error {
+	var err error
+	var editor, user User
+	if db := Database.Take(&editor, editorId); db.Error != nil {
+		return db.Error
+	}
+	if db := Database.Take(&user, userId); db.Error != nil {
+		return db.Error
+	}
+	if editor.Administrator != true {
+		return errors.New("user is not administrator")
+	}
+	var hashedPassword string
 	if password != "" {
-		var hashedPassword string
 		hashedPassword, err = Helpers.CreateHashFromPassword(password)
 		if err != nil {
 			return err
 		}
-		user.Password = hashedPassword
 	}
 	dbContext := Database.Begin()
-	if db := dbContext.Model(&user).Updates(&user); db.Error != nil {
+	if db := dbContext.Model(&user).Update("password", hashedPassword); db.Error != nil {
 		dbContext.Rollback()
 		return db.Error
 	}

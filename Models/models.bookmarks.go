@@ -82,9 +82,16 @@ func AddBookmark(userId uint, categoryId uint, bookmark Bookmark) (Bookmark, boo
 }
 func EditBookmark(userId uint, categoryId uint, bookmark Bookmark) error {
 	var category Category
+	var existingBookmark Bookmark
 
 	if result := Database.Take(&category, categoryId); result.Error != nil {
 		return result.Error
+	}
+	if result := Database.Take(&existingBookmark, bookmark.ID); result.Error != nil {
+		return result.Error
+	}
+	if existingBookmark.CategoryID != categoryId || bookmark.CategoryID != existingBookmark.CategoryID {
+		return errors.New("Category id of bookmark is not the same as given")
 	}
 	if category.OwnerID != userId {
 		return errors.New("owner of bookmark not the same as logged on user")
@@ -99,15 +106,53 @@ func EditBookmark(userId uint, categoryId uint, bookmark Bookmark) error {
 }
 func DeleteBookmark(userId uint, categoryId uint, bookmarkId uint) error {
 	var category Category
+	var bookmark Bookmark
 
 	if result := Database.Take(&category, categoryId); result.Error != nil {
 		return result.Error
+	}
+	if result := Database.Take(&bookmark, bookmarkId); result.Error != nil {
+		return result.Error
+	}
+	if bookmark.CategoryID != categoryId {
+		return errors.New("Category id of bookmark is not the same as given")
 	}
 	if category.OwnerID != userId {
 		return errors.New("Owner of bookmark not the same as loged on user")
 	}
 	dbContext := Database.Begin()
 	if result := dbContext.Delete(&Bookmark{}, bookmarkId); result.Error != nil {
+		dbContext.Rollback()
+		return result.Error
+	}
+	dbContext.Commit()
+	return nil
+}
+func MoveBookmarkToCategory(userId, bookmarkId, sourceCategoryId, destinationCategoryId uint) error {
+	var sourceCategory, destinationCategory Category
+	var bookmark Bookmark
+	if result := Database.Take(&sourceCategory, sourceCategoryId); result.Error != nil {
+		return result.Error
+	}
+	if result := Database.Take(&destinationCategory, destinationCategoryId); result.Error != nil {
+		return result.Error
+	}
+	if sourceCategory.OwnerID != userId {
+		return errors.New("Owner of source category not the same as logged on user")
+	}
+	if destinationCategory.OwnerID != userId {
+		return errors.New("Owner of destination category not the same as logged on user")
+	}
+	if result := Database.Take(&bookmark, bookmarkId); result.Error != nil {
+		return result.Error
+	}
+	if bookmark.CategoryID != sourceCategoryId {
+		errors.New("Category id of bookmark is not the same as given")
+	}
+	bookmark.CategoryID = destinationCategoryId
+
+	dbContext := Database.Begin()
+	if result := dbContext.Save(&bookmark); result.Error != nil {
 		dbContext.Rollback()
 		return result.Error
 	}

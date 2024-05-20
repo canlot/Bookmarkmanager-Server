@@ -112,3 +112,28 @@ func DeleteBookmarkWithBookmarkId(c *gin.Context) {
 	}
 	c.Status(200)
 }
+func MoveBookmarkWithBookmarkId(c *gin.Context) {
+	categoryidstring := c.Param("category_id")
+	bookmarkidstring := c.Param("bookmark_id")
+	categorydestinationidstring := c.Param("category_destination_id")
+
+	var sourceid uint
+	var destinationid uint
+	var bookmarkid uint
+	var success bool
+
+	if sourceid, success = Helpers.ConvertFromStringToUint(&categoryidstring); success != true {
+		c.JSON(400, errors.New("Could not convert string"))
+	}
+	if destinationid, success = Helpers.ConvertFromStringToUint(&categorydestinationidstring); success != true {
+		c.JSON(400, errors.New("Could not convert string"))
+	}
+	if bookmarkid, success = Helpers.ConvertFromStringToUint(&bookmarkidstring); success != true {
+		c.JSON(400, errors.New("Could not convert string"))
+	}
+	err := Models.MoveBookmarkToCategory(Helpers.GetUserIdAsUint(c), bookmarkid, sourceid, destinationid)
+	if err != nil {
+		c.JSON(400, err)
+	}
+	c.Status(200)
+}
