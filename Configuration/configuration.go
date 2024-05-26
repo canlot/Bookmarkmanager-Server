@@ -10,6 +10,8 @@ import (
 type Configuration struct {
 	ListenPort     int
 	DatabaseConfig DatabaseConfig
+	SslEncryption  SslEncryption
+	SetUpUser      SetUpUser
 }
 
 type DatabaseConfig struct {
@@ -19,6 +21,17 @@ type DatabaseConfig struct {
 	Username   string
 	Password   string
 	Database   string
+}
+
+type SslEncryption struct {
+	Enabled  bool
+	CertPath string
+	KeyPath  string
+}
+type SetUpUser struct {
+	Email    string
+	Name     string
+	Password string
 }
 
 type DatabaseType string
@@ -45,7 +58,9 @@ func init() {
 }
 
 func GetConfig() {
+	//viper.SetDefault("ListenPort", 8080)
 	if Environment == Test {
+		AppConfiguration.ListenPort = 8080
 		return
 	}
 
@@ -63,6 +78,7 @@ func GetConfig() {
 	}
 
 	err = viper.Unmarshal(&AppConfiguration)
+	log.Println(AppConfiguration.ListenPort)
 	if err != nil {
 		log.Fatalf("couln't parse config file: %w", err)
 	}

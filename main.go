@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 )
@@ -29,14 +30,21 @@ func main() {
 	defer stop()
 
 	srv := &http.Server{
-		Addr:    ":8080",
+		Addr:    ":" + strconv.Itoa(Configuration.AppConfiguration.ListenPort),
 		Handler: router,
 	}
 
 	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
+		if Configuration.AppConfiguration.SslEncryption.Enabled != true {
+			if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.Fatalf("listen: %s\n", err)
+			}
+		} else {
+			if err := srv.ListenAndServeTLS(Configuration.AppConfiguration.SslEncryption.CertPath, Configuration.AppConfiguration.SslEncryption.KeyPath); err != nil && err != http.ErrServerClosed {
+				log.Fatalf("listen: %s\n", err)
+			}
 		}
+
 	}()
 	<-ctx.Done()
 	stop()

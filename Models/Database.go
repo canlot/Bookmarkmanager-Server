@@ -2,6 +2,8 @@ package Models
 
 import (
 	"Bookmarkmanager-Server/Configuration"
+	"Bookmarkmanager-Server/Helpers"
+	"errors"
 	"fmt"
 	"github.com/glebarez/sqlite"
 	"gorm.io/driver/mysql"
@@ -35,4 +37,39 @@ func DatabaseConfig() {
 	}
 	Database.AutoMigrate(&User{}, &Category{}, &Bookmark{})
 
+	if Configuration.Environment != Configuration.Production {
+		return
+	}
+	if err = UserSetUp(); err != nil {
+		panic(err)
+	}
+}
+
+func UserSetUp() error {
+	var db *gorm.DB
+	if db = Database.Take(&User{}, "administrator = ?", true); db.Error != nil {
+		return db.Error
+	}
+	if db.RowsAffected > 0 { // if one user with admin found, return
+		return nil
+	}
+	if Configuration.AppConfiguration.SetUpUser.Email == "" ||
+		Configuration.AppConfiguration.SetUpUser.Password == "" ||
+		Configuration.AppConfiguration.SetUpUser.Name == "" {
+		return errors.New("configuration not complete")
+	}
+	password, err := Helpers.CreateHashFromPassword(Configuration.AppConfiguration.SetUpUser.Password)
+	if err != nil {
+		return err
+	}
+	var user = User{
+		Email:         Configuration.AppConfiguration.SetUpUser.Email,
+		Name:          Configuration.AppConfiguration.SetUpUser.Name,
+		Password:      password,
+		Administrator: true,
+	}
+	if db = Database.Create(&user); db.Error != nil {
+		return db.Error
+	}
+	return nil
 }
