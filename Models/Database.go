@@ -47,10 +47,7 @@ func DatabaseConfig() {
 
 func UserSetUp() error {
 	var db *gorm.DB
-	if db = Database.Take(&User{}, "administrator = ?", true); db.Error != nil {
-		return db.Error
-	}
-	if db.RowsAffected > 0 { // if one user with admin found, return
+	if db = Database.Take(&User{}, "administrator = ?", true); db.Error == nil { // returns if at least one administrator found
 		return nil
 	}
 	if Configuration.AppConfiguration.SetUpUser.Email == "" ||
