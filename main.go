@@ -21,7 +21,11 @@ func main() {
 	Configuration.GetConfig()
 	Models.DatabaseConfig()
 	setUpTestData()
-	gin.SetMode(gin.DebugMode)
+	if Configuration.Environment == Configuration.Production {
+		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(gin.DebugMode)
+	}
 
 	router = gin.Default()
 	InitializeRoutes()

@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/glebarez/sqlite"
 	"gorm.io/driver/mysql"
-
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -16,6 +15,13 @@ var Database *gorm.DB
 
 func DatabaseConfig() {
 	var err error
+	var logLevel logger.Interface
+	if Configuration.Environment == Configuration.Production {
+		logLevel = logger.Default.LogMode(logger.Silent)
+	} else {
+		logLevel = logger.Default.LogMode(logger.Info)
+	}
+
 	if Configuration.Environment == Configuration.Production {
 		if Configuration.AppConfiguration.DatabaseConfig.DBProvider == Configuration.Sqlite {
 			Database, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
@@ -25,7 +31,7 @@ func DatabaseConfig() {
 				Configuration.AppConfiguration.DatabaseConfig.Password, Configuration.AppConfiguration.DatabaseConfig.Host, Configuration.AppConfiguration.DatabaseConfig.Port,
 				Configuration.AppConfiguration.DatabaseConfig.Database)
 			Database, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
-				Logger: logger.Default.LogMode(logger.Info),
+				Logger: logLevel,
 			})
 		}
 	} else if Configuration.Environment == Configuration.Test || Configuration.Environment == Configuration.Debug {
