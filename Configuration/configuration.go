@@ -91,7 +91,6 @@ func GetConfig() {
 }
 func checkConfig() error {
 	if AppConfiguration.ListenPort <= 0 || AppConfiguration.ListenPort >= 65536 {
-		log.Println(AppConfiguration.ListenPort)
 		return errors.New("Listen port is not in the port range")
 	}
 	return nil
