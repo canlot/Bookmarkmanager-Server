@@ -20,14 +20,14 @@ func init() {
 func Authenticate(c *gin.Context) {
 	bearerToken := c.Request.Header.Get("Authorization")
 	if strings.Split(bearerToken, " ")[0] != "Bearer" {
-		c.Status(http.StatusNotAcceptable)
+		c.AbortWithStatus(http.StatusNotAcceptable)
 		return
 	}
 
 	var userId interface{}
 	var success bool
 	if userId, success = tokenCache.Get(strings.Split(bearerToken, " ")[1]); success != true {
-		c.Status(http.StatusUnauthorized)
+		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 	c.Set("UserID", userId.(uint))
