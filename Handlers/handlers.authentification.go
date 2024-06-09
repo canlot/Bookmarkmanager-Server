@@ -1,6 +1,7 @@
 package Handlers
 
 import (
+	"Bookmarkmanager-Server/Configuration"
 	"Bookmarkmanager-Server/Models"
 	"github.com/akyoto/cache"
 	"github.com/gin-gonic/gin"
@@ -14,7 +15,7 @@ import (
 var tokenCache *cache.Cache
 
 func init() {
-	tokenCache = cache.New(1 * time.Hour)
+	tokenCache = cache.New(time.Duration(Configuration.AppConfiguration.TokenLifetime) * time.Minute)
 }
 
 func Authenticate(c *gin.Context) {

@@ -9,6 +9,7 @@ import (
 
 type Configuration struct {
 	ListenPort     int
+	TokenLifetime  int
 	DatabaseConfig DatabaseConfig
 	SslEncryption  SslEncryption
 	SetUpUser      SetUpUser
@@ -84,6 +85,10 @@ func GetConfig() {
 	}
 
 	err = checkConfig()
+	if AppConfiguration.TokenLifetime == 0 {
+		AppConfiguration.TokenLifetime = 3600
+	}
+
 	if err != nil {
 		log.Fatalf("config did not pass %w", err)
 	}
