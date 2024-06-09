@@ -2,6 +2,7 @@ package main
 
 import (
 	"Bookmarkmanager-Server/Configuration"
+	"Bookmarkmanager-Server/Handlers"
 	"Bookmarkmanager-Server/Models"
 	"Bookmarkmanager-Server/Test"
 	"context"
@@ -19,8 +20,11 @@ var router *gin.Engine
 func main() {
 	Configuration.Environment = Configuration.Production
 	Configuration.GetConfig()
+	Handlers.SetUpTokenCache()
 	Models.DatabaseConfig()
+
 	setUpTestData()
+
 	if Configuration.Environment == Configuration.Production {
 		gin.SetMode(gin.ReleaseMode)
 	} else {

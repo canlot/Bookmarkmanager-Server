@@ -84,11 +84,12 @@ func GetConfig() {
 		log.Fatalf("couln't parse config file: %w", err)
 	}
 
+	log.Println(AppConfiguration.TokenLifetime)
 	err = checkConfig()
 	if AppConfiguration.TokenLifetime == 0 {
 		AppConfiguration.TokenLifetime = 3600
 	}
-
+	log.Println(AppConfiguration.TokenLifetime)
 	if err != nil {
 		log.Fatalf("config did not pass %w", err)
 	}
