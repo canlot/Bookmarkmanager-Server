@@ -20,7 +20,11 @@ func init() {
 }
 func SetUpTokenCache() {
 	log.Print("Token time: ", Configuration.AppConfiguration.TokenLifetime)
-	tokenCache = cache.New(time.Duration(Configuration.AppConfiguration.TokenLifetime) * time.Minute)
+	duration, err := time.ParseDuration(Configuration.AppConfiguration.TokenLifetime)
+	if err != nil {
+		panic(err)
+	}
+	tokenCache = cache.New(duration)
 }
 func Authenticate(c *gin.Context) {
 	bearerToken := c.Request.Header.Get("Authorization")
