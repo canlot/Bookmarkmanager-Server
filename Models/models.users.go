@@ -150,6 +150,10 @@ func DeleteUser(administratorId uint, deletingUserId uint) error {
 			}
 		}
 	}
+	if err := dbContext.Model(&deletingUser).Association("CategoriesAccess").Clear(); err != nil {
+		dbContext.Rollback()
+		return err
+	}
 	if db := dbContext.Delete(&deletingUser); db.Error != nil {
 		dbContext.Rollback()
 		return db.Error
