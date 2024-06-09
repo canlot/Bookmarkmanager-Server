@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/thanhpk/randstr"
 	"golang.org/x/crypto/bcrypt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -18,6 +19,7 @@ func init() {
 
 }
 func SetUpTokenCache() {
+	log.Print("Token time: ", Configuration.AppConfiguration.TokenLifetime)
 	tokenCache = cache.New(time.Duration(Configuration.AppConfiguration.TokenLifetime) * time.Minute)
 }
 func Authenticate(c *gin.Context) {
