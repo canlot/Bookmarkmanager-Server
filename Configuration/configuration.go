@@ -10,6 +10,7 @@ import (
 type Configuration struct {
 	ListenPort     int
 	TokenLifetime  string
+	IconFolderPath string
 	DatabaseConfig DatabaseConfig
 	SslEncryption  SslEncryption
 	SetUpUser      SetUpUser
@@ -60,8 +61,15 @@ func init() {
 
 func GetConfig() {
 	//viper.SetDefault("ListenPort", 8080)
-	if Environment == Test {
+	if Environment == Test || Environment == Debug {
 		AppConfiguration.ListenPort = 8080
+		if AppConfiguration.TokenLifetime == "" {
+			AppConfiguration.TokenLifetime = "1h"
+		}
+		if AppConfiguration.IconFolderPath == "" {
+			AppConfiguration.IconFolderPath = "./icons"
+		}
+		setUpThings()
 		return
 	}
 
@@ -84,20 +92,31 @@ func GetConfig() {
 		log.Fatalf("couln't parse config file: %w", err)
 	}
 
-	log.Println(AppConfiguration.TokenLifetime)
 	err = checkConfig()
-	if AppConfiguration.TokenLifetime == "" {
-		AppConfiguration.TokenLifetime = "1h"
-	}
-	log.Println(AppConfiguration.TokenLifetime)
 	if err != nil {
 		log.Fatalf("config did not pass %w", err)
 	}
+	if AppConfiguration.TokenLifetime == "" {
+		AppConfiguration.TokenLifetime = "1h"
+	}
+	if AppConfiguration.IconFolderPath == "" {
+		AppConfiguration.IconFolderPath = "./icons"
+	}
 
+	setUpThings()
 }
 func checkConfig() error {
 	if AppConfiguration.ListenPort <= 0 || AppConfiguration.ListenPort >= 65536 {
 		return errors.New("Listen port is not in the port range")
 	}
 	return nil
+}
+func setUpThings() error {
+	createIconsFolder()
+	return nil
+}
+func createIconsFolder() {
+	err := os.Mkdir(AppConfiguration.IconFolderPath, 0777)
+	if err != nil {
+	}
 }

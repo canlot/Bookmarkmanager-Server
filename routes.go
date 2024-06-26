@@ -7,6 +7,7 @@ func InitializeRoutes() {
 
 	apiRoutes := router.Group("/apiv1", Handlers.Authenticate)
 	{
+		apiRoutes.POST("/upload", Handlers.UploadTest)
 		apiRoutes.GET("/currentuser", Handlers.GetCurrentUser)
 
 		categoryRoutes := apiRoutes.Group("/categories")
@@ -24,7 +25,12 @@ func InitializeRoutes() {
 				categoryRoutesIDBookmarks := categoryRoutesID.Group("/bookmarks")
 				{
 					categoryRoutesIDBookmarks.GET("/", Handlers.GetBookmarksWithCategoryId)
+					categoryRoutesIDBookmarks.GET("/:bookmark_id/icon", Handlers.GetIconForBookmark)
+
 					categoryRoutesIDBookmarks.POST("/", Handlers.AddBookmarkToCategory)
+
+					categoryRoutesIDBookmarks.POST("/:bookmark_id/icon", Handlers.UploadIconToBookmark)
+
 					categoryRoutesIDBookmarks.PUT("/:bookmark_id", Handlers.EditBookmarkWithBookmarkId)
 					categoryRoutesIDBookmarks.PUT("/:bookmark_id/to/:category_destination_id", Handlers.MoveBookmarkWithBookmarkId)
 					categoryRoutesIDBookmarks.DELETE("/:bookmark_id", Handlers.DeleteBookmarkWithBookmarkId)
@@ -35,15 +41,6 @@ func InitializeRoutes() {
 					categoryRoutesIDUsers.PUT("/", Handlers.EditUsersForCategory)
 				}
 			}
-		}
-
-		bookmarkRoutes := apiRoutes.Group("/bookmarks")
-		{
-			bookmarkRoutes.GET("/:id")
-			bookmarkRoutes.PUT("/:id")
-			bookmarkRoutes.DELETE("/:id")
-
-			bookmarkRoutes.GET("/search/:search_text", Handlers.SearchBookmarks)
 		}
 
 		userRoutes := apiRoutes.Group("/users")

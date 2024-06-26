@@ -39,6 +39,7 @@ func GetBookmarksWithCategoryID(userId uint, categoryId uint) (bookmarks []Bookm
 	}
 	return bookmarks, true
 }
+
 func SearchBookmarks(UserId uint, searchText string) ([]Bookmark, error) {
 	var user User
 	if db := Database.Take(&user, UserId); db.Error != nil {
@@ -127,6 +128,25 @@ func DeleteBookmark(userId uint, categoryId uint, bookmarkId uint) error {
 	}
 	dbContext.Commit()
 	return nil
+}
+func GetBookmark(userId uint, categoryId uint, bookmarkId uint) (Bookmark, error) {
+	var category Category
+	var bookmark Bookmark
+
+	if result := Database.Take(&category, categoryId); result.Error != nil {
+		return bookmark, result.Error
+	}
+	if result := Database.Take(&bookmark, bookmarkId); result.Error != nil {
+		return bookmark, result.Error
+	}
+	if bookmark.CategoryID != categoryId {
+		return bookmark, errors.New("Category id of bookmark is not the same as given")
+	}
+	if category.OwnerID != userId {
+		return bookmark, errors.New("Owner of bookmark not the same as loged on user")
+	}
+	return bookmark, nil
+
 }
 func MoveBookmarkToCategory(userId, bookmarkId, sourceCategoryId, destinationCategoryId uint) error {
 	var sourceCategory, destinationCategory Category

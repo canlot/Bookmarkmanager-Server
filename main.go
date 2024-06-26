@@ -18,7 +18,7 @@ import (
 var router *gin.Engine
 
 func main() {
-	Configuration.Environment = Configuration.Production
+	Configuration.Environment = Configuration.Debug
 	Configuration.GetConfig()
 	Handlers.SetUpTokenCache()
 	Models.DatabaseConfig()
