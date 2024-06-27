@@ -184,11 +184,11 @@ func GetIconForBookmark(c *gin.Context) {
 		c.JSON(400, err)
 		return
 	}
-	if bookmark.IconHash == "" {
+	if bookmark.IconName == "" {
 		c.JSON(400, errors.New("No icon for this bookmark"))
 		return
 	}
-	fileName := bookmark.IconHash + ".png"
+	fileName := bookmark.IconName + ".png"
 	iconPath := path.Join(Configuration.AppConfiguration.IconFolderPath, fileName)
 
 	if _, err := os.Stat(iconPath); os.IsNotExist(err) {

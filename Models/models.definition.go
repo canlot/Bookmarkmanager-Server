@@ -23,7 +23,7 @@ type Bookmark struct {
 	Url         string `json:"url"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
-	IconName    string
+	IconName    string `json:"iconname"`
 }
 
 type User struct {
