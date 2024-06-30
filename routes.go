@@ -7,7 +7,6 @@ func InitializeRoutes() {
 
 	apiRoutes := router.Group("/apiv1", Handlers.Authenticate)
 	{
-		apiRoutes.POST("/upload", Handlers.UploadTest)
 		apiRoutes.GET("/currentuser", Handlers.GetCurrentUser)
 
 		categoryRoutes := apiRoutes.Group("/categories")

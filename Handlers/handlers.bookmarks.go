@@ -188,7 +188,7 @@ func GetIconForBookmark(c *gin.Context) {
 		c.JSON(400, errors.New("No icon for this bookmark"))
 		return
 	}
-	fileName := bookmark.IconName + ".png"
+	fileName := bookmark.IconName
 	iconPath := path.Join(Configuration.AppConfiguration.IconFolderPath, fileName)
 
 	if _, err := os.Stat(iconPath); os.IsNotExist(err) {
@@ -202,7 +202,6 @@ func GetIconForBookmark(c *gin.Context) {
 		return
 	}
 	c.Data(200, "image/png", rawfile)
-	//c.FileAttachment(iconPath, fileName)
 	return
 
 }
@@ -273,26 +272,4 @@ func UploadIconToBookmark(c *gin.Context) {
 	}
 
 	c.Status(200)
-}
-
-func UploadTest(c *gin.Context) {
-	raw, err := c.GetRawData()
-	if err != nil {
-		c.JSON(400, err)
-		return
-	}
-	hash, err := Helpers.CumputeHashFromBytes(raw)
-	if err != nil {
-		c.JSON(400, err)
-		return
-	}
-
-	fileName := hash + ".png"
-
-	iconPath := path.Join(Configuration.AppConfiguration.IconFolderPath, fileName)
-	file, err := os.Create(iconPath)
-	defer file.Close()
-	file.Write(raw)
-	c.Status(200)
-	return
 }
