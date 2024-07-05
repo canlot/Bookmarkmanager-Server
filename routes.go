@@ -42,6 +42,11 @@ func InitializeRoutes() {
 			}
 		}
 
+		bookmarkRoutes := apiRoutes.Group("/bookmarks")
+		{
+			bookmarkRoutes.GET("/search/:search_text", Handlers.SearchBookmarks)
+		}
+
 		userRoutes := apiRoutes.Group("/users")
 		{
 			userRoutes.GET("/", Handlers.GetAllUsers)
