@@ -13,7 +13,7 @@ import (
 
 var Database *gorm.DB
 
-func DatabaseConfig() {
+func DatabaseSetup() {
 	var err error
 	var logLevel logger.Interface
 	if Configuration.Environment == Configuration.Production {

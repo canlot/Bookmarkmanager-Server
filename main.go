@@ -2,7 +2,6 @@ package main
 
 import (
 	"Bookmarkmanager-Server/Configuration"
-	"Bookmarkmanager-Server/Handlers"
 	"Bookmarkmanager-Server/Models"
 	"Bookmarkmanager-Server/Test"
 	"context"
@@ -18,10 +17,8 @@ import (
 var router *gin.Engine
 
 func main() {
-	Configuration.Environment = Configuration.Production
 	Configuration.GetConfig()
-	Handlers.SetUpTokenCache()
-	Models.DatabaseConfig()
+	Models.DatabaseSetup()
 
 	setUpTestData()
 

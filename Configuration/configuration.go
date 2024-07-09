@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/viper"
 	"log"
 	"os"
+	"time"
 )
 
 type Configuration struct {
@@ -55,12 +56,12 @@ var Environment EnvironmentType
 
 var AppConfiguration Configuration
 
-func init() {
-	Environment = Test
-}
-
 func GetConfig() {
-	//viper.SetDefault("ListenPort", 8080)
+
+	if Environment != Test && Environment != Debug {
+		Environment = Production
+	}
+
 	if Environment == Test || Environment == Debug {
 		AppConfiguration.ListenPort = 8080
 		if AppConfiguration.TokenLifetime == "" {
@@ -92,10 +93,6 @@ func GetConfig() {
 		log.Fatalf("couln't parse config file: %w", err)
 	}
 
-	err = checkConfig()
-	if err != nil {
-		log.Fatalf("config did not pass %w", err)
-	}
 	if AppConfiguration.TokenLifetime == "" {
 		AppConfiguration.TokenLifetime = "1h"
 	}
@@ -103,11 +100,20 @@ func GetConfig() {
 		AppConfiguration.IconFolderPath = "./icons"
 	}
 
+	err = checkConfig()
+	if err != nil {
+		log.Fatalf("config did not pass %w", err)
+	}
+
 	setUpThings()
 }
 func checkConfig() error {
 	if AppConfiguration.ListenPort <= 0 || AppConfiguration.ListenPort >= 65536 {
 		return errors.New("Listen port is not in the port range")
+	}
+	_, err := time.ParseDuration(AppConfiguration.TokenLifetime)
+	if err != nil {
+		return errors.New("Could not parse TokenLifetime")
 	}
 	return nil
 }

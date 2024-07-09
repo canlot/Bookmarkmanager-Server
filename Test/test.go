@@ -79,7 +79,7 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 }
 
 func InitializeDatabase() {
-	Models.DatabaseConfig()
+	Models.DatabaseSetup()
 	PopulateDatabase()
 }
 

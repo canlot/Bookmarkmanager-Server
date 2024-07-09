@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/thanhpk/randstr"
 	"golang.org/x/crypto/bcrypt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -16,16 +15,9 @@ import (
 var tokenCache *cache.Cache
 
 func init() {
+	tokenCache = cache.New(1 * time.Hour)
+}
 
-}
-func SetUpTokenCache() {
-	log.Print("Token time: ", Configuration.AppConfiguration.TokenLifetime)
-	duration, err := time.ParseDuration(Configuration.AppConfiguration.TokenLifetime)
-	if err != nil {
-		panic(err)
-	}
-	tokenCache = cache.New(duration)
-}
 func Authenticate(c *gin.Context) {
 	bearerToken := c.Request.Header.Get("Authorization")
 	if strings.Split(bearerToken, " ")[0] != "Bearer" {
@@ -66,7 +58,12 @@ func GetBearerToken(c *gin.Context) {
 	}
 	token := randstr.String(64)
 	userid := user.ID
-	tokenCache.Set(token, userid, 1*time.Hour)
+
+	duration, err := time.ParseDuration(Configuration.AppConfiguration.TokenLifetime)
+	if err != nil {
+		duration = 1 * time.Hour
+	}
+	tokenCache.Set(token, userid, duration)
 
 	c.String(200, "%s", token)
 	return
