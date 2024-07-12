@@ -6,20 +6,19 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"net/http/httptest"
 )
 
 var Users = map[string]*Models.User{
 	"Administrator": &Models.User{
-		Model:         gorm.Model{ID: 1},
+		ID:            1,
 		Email:         "admin@test.intern",
 		Name:          "Administrator",
 		Password:      "admin",
 		Administrator: true,
 	},
 	"User": &Models.User{
-		Model:            gorm.Model{ID: 2},
+		ID:               2,
 		Email:            "user@test.intern",
 		Name:             "User",
 		Password:         "user",
@@ -27,7 +26,7 @@ var Users = map[string]*Models.User{
 		CategoriesAccess: nil,
 	},
 	"Jakob": &Models.User{
-		Model:            gorm.Model{ID: 3},
+		ID:               3,
 		Email:            "jakob@test.intern",
 		Name:             "Jakob",
 		Password:         "test",
@@ -38,14 +37,14 @@ var Users = map[string]*Models.User{
 
 var Categories = map[string]*Models.Category{
 	"IT": &Models.Category{
-		Model:    gorm.Model{ID: 1},
+		ID:       1,
 		ParentID: 0,
 		Name:     "IT",
 		Shared:   false,
 		OwnerID:  2,
 	},
 	"Books": &Models.Category{
-		Model:       gorm.Model{ID: 2},
+		ID:          2,
 		ParentID:    0,
 		Name:        "Books",
 		Description: "Best Books",
@@ -53,14 +52,14 @@ var Categories = map[string]*Models.Category{
 		OwnerID:     1,
 	},
 	"Programming": &Models.Category{
-		Model:    gorm.Model{ID: 3},
+		ID:       3,
 		ParentID: 1,
 		Name:     "Programming",
 		Shared:   false,
 		OwnerID:  2,
 	},
 	"C#": &Models.Category{
-		Model:    gorm.Model{ID: 4},
+		ID:       4,
 		ParentID: 3,
 		Name:     "C#",
 		Shared:   false,

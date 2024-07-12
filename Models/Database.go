@@ -35,7 +35,9 @@ func DatabaseSetup() {
 			})
 		}
 	} else if Configuration.Environment == Configuration.Test || Configuration.Environment == Configuration.Debug {
-		Database, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+		Database, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
+			Logger: logLevel,
+		})
 	}
 
 	if err != nil {

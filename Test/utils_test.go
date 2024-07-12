@@ -4,7 +4,6 @@ import (
 	"Bookmarkmanager-Server/Handlers"
 	"Bookmarkmanager-Server/Models"
 	"github.com/go-playground/assert/v2"
-	"gorm.io/gorm"
 	"testing"
 )
 
@@ -55,7 +54,7 @@ func TestAddCategory(t *testing.T) {
 	defer CleanupDatabase()
 
 	shoppingSitesCategory := Models.Category{
-		Model:    gorm.Model{ID: 5},
+		ID:       5,
 		ParentID: 0,
 		Name:     "Shopping",
 		Shared:   false,
@@ -81,7 +80,7 @@ func TestAddCategoryChild(t *testing.T) {
 	defer CleanupDatabase()
 
 	golangCategory := Models.Category{
-		Model:    gorm.Model{ID: 5},
+		ID:       5,
 		ParentID: 3,
 		Name:     "Golang",
 		Shared:   false,
@@ -119,7 +118,7 @@ func TestAddCategoryChildShared(t *testing.T) {
 	InitializeDatabase()
 	defer CleanupDatabase()
 	administrationBooks := Models.Category{
-		Model:    gorm.Model{ID: 5},
+		ID:       5,
 		ParentID: 2,
 		Name:     "Administration",
 	}
@@ -145,9 +144,7 @@ func TestEditCategory(t *testing.T) {
 	InitializeDatabase()
 	defer CleanupDatabase()
 	testCategory := Models.Category{
-		Model: gorm.Model{
-			ID: 2,
-		},
+		ID:       2,
 		ParentID: 0,
 		Name:     "BooksTest",
 		Shared:   true,
@@ -244,13 +241,13 @@ func TestChangeUserPermissionCategoryWithExistingUsers(t *testing.T) {
 
 	usersWithAccess := []Models.User{
 		Models.User{
-			Model:         gorm.Model{ID: 1},
+			ID:            1,
 			Name:          "Administrator",
 			Password:      "admin",
 			Administrator: true,
 		},
 		Models.User{
-			Model:         gorm.Model{ID: 3},
+			ID:            3,
 			Name:          "Jakob",
 			Password:      "test",
 			Administrator: false,
@@ -264,7 +261,7 @@ func TestChangeUserPermissionCategoryWithExistingUsers(t *testing.T) {
 	assert.Equal(t, 200, c.Writer.Status())
 
 	categoryBooks := Models.Category{
-		Model:    gorm.Model{ID: 2},
+		ID:       2,
 		ParentID: 0,
 		Name:     "Books",
 		Shared:   true,
@@ -287,19 +284,19 @@ func TestChangeUserPermissionCategoryWithNonExistingUsers(t *testing.T) {
 
 	usersWithAccess := []Models.User{
 		Models.User{
-			Model:         gorm.Model{ID: 1},
+			ID:            1,
 			Name:          "Administrator",
 			Password:      "admin",
 			Administrator: true,
 		},
 		Models.User{
-			Model:         gorm.Model{ID: 3},
+			ID:            3,
 			Name:          "Jakob",
 			Password:      "test",
 			Administrator: false,
 		},
 		Models.User{
-			Model:         gorm.Model{ID: 4},
+			ID:            4,
 			Name:          "Bob",
 			Administrator: false,
 		},
@@ -310,7 +307,7 @@ func TestChangeUserPermissionCategoryWithNonExistingUsers(t *testing.T) {
 	Handlers.EditUsersForCategory(c)
 
 	categoryBooks := Models.Category{
-		Model:    gorm.Model{ID: 2},
+		ID:       2,
 		ParentID: 0,
 		Name:     "Books",
 		Shared:   true,
