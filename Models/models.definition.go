@@ -22,8 +22,9 @@ type Category struct {
 }
 
 type Bookmark struct {
-	ID          uint           `gorm:"primaryKey"`
-	CreatedAt   time.Time      `gorm:"<-:create" json:",omitempty"`
+	ID uint `gorm:"primaryKey"`
+	//CreatedAt   time.Time      `gorm:"<-:create" json:",omitempty"`
+	CreatedAt   time.Time      `json:",omitempty"`
 	UpdatedAt   time.Time      `json:",omitempty"`
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
 	CategoryID  uint           `json:"categoryid"`
