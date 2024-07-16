@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-var ShowPassword bool = false
-
 type Category struct {
 	ID          uint `gorm:"primaryKey"`
 	CreatedAt   time.Time
@@ -22,9 +20,8 @@ type Category struct {
 }
 
 type Bookmark struct {
-	ID uint `gorm:"primaryKey"`
-	//CreatedAt   time.Time      `gorm:"<-:create" json:",omitempty"`
-	CreatedAt   time.Time      `json:",omitempty"`
+	ID          uint           `gorm:"primaryKey"`
+	CreatedAt   time.Time      `gorm:"<-:create" json:",omitempty"`
 	UpdatedAt   time.Time      `json:",omitempty"`
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
 	CategoryID  uint           `json:"categoryid"`

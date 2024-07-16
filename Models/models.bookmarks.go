@@ -94,9 +94,6 @@ func EditBookmark(userId uint, categoryId uint, bookmark Bookmark) error {
 	if existingBookmark.CategoryID != categoryId || bookmark.CategoryID != existingBookmark.CategoryID {
 		return errors.New("Category id of bookmark is not the same as given")
 	}
-	if existingBookmark.CreatedAt.IsZero() { // a wild hack to fix createdat zero value in db
-		bookmark.CreatedAt = existingBookmark.UpdatedAt
-	}
 	if category.OwnerID != userId {
 		return errors.New("owner of bookmark not the same as logged on user")
 	}
@@ -170,7 +167,7 @@ func MoveBookmarkToCategory(userId, bookmarkId, sourceCategoryId, destinationCat
 		return result.Error
 	}
 	if bookmark.CategoryID != sourceCategoryId {
-		errors.New("Category id of bookmark is not the same as given")
+		return errors.New("Category id of bookmark is not the same as given")
 	}
 	bookmark.CategoryID = destinationCategoryId
 
