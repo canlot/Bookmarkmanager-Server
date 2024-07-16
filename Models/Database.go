@@ -33,6 +33,7 @@ func DatabaseSetup() {
 			Database, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 				Logger: logLevel,
 			})
+			fixTimeIssue()
 		}
 	} else if Configuration.Environment == Configuration.Test || Configuration.Environment == Configuration.Debug {
 		Database, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{
@@ -77,4 +78,19 @@ func UserSetUp() error {
 		return db.Error
 	}
 	return nil
+}
+func fixTimeIssue() {
+	var bookmarks []Bookmark
+
+	if db := Database.Find(&bookmarks); db.Error != nil {
+		panic("couldn't select all users")
+	}
+	for _, bookmark := range bookmarks {
+		if bookmark.CreatedAt.IsZero() {
+			bookmark.CreatedAt = bookmark.UpdatedAt
+			if db := Database.Save(&bookmark); db.Error != nil {
+				panic("couldn't save bookmark")
+			}
+		}
+	}
 }
