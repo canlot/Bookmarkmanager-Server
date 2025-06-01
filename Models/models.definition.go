@@ -13,6 +13,7 @@ type Category struct {
 	ParentID    uint           `json:"parentid"`
 	Name        string         `json:"name"`
 	Description string         `json:"description"`
+	IconName    string         `json:"iconname"`
 	Shared      bool           `json:"shared"`
 	OwnerID     uint           `json:"ownerid"`
 	Bookmarks   []Bookmark     `json:"-"`
